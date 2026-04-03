@@ -1,0 +1,56 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  nombreCompleto String?
+  planActual     String    @default("gratis")
+  materias       Materia[]
+  createdAt      DateTime  @default(now())
+}
+
+model Materia {
+  id        String            @id @default(uuid())
+  nombre    String
+  usuario   Usuario           @relation(fields: [usuarioId], references: [id])
+  usuarioId String
+  fuentes   FuenteContenido[]
+}
+
+enum TipoContenido {
+  PDF
+  IMAGEN
+  VIDEO
+  PRESENTACION
+  LINK_DRIVE
+  TEXTO_PLANO
+}
+
+model FuenteContenido {
+  id            String              @id @default(uuid())
+  materia       Materia             @relation(fields: [materiaId], references: [id])
+  materiaId     String
+  tipo          TipoContenido
+  urlArchivo    String? // URL de Supabase Storage
+  nombreArchivo String?
+  textoExtraido String?             @db.Text
+  generaciones  GeneracionRecurso[]
+  createdAt     DateTime            @default(now())
+}
+
+model GeneracionRecurso {
+  id            String          @id @default(uuid())
+  fuente        FuenteContenido @relation(fields: [fuenteId], references: [id])
+  fuenteId      String
+  tipoRecurso   String // Resumen, Roadmap, Estructura
+  contenidoJson Json
+  createdAt     DateTime        @default(now())
+}
