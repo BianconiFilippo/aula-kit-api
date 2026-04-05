@@ -9,8 +9,8 @@ const register = async (req, res) => {
   }
 
   try {
-    const usuario = await authService.register(registerDto);
-    return res.status(201).json({ mensaje: "Usuario registrado", usuario });
+    const session = await authService.register(registerDto);
+    return res.status(201).json({ mensaje: "Usuario registrado", session });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
@@ -31,4 +31,13 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const googleLogin = async (req, res) => {
+  try {
+    const url = await authService.signInWithGoogle();
+    res.redirect(url);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al inicializar Google Auth', detalle: error.message });
+  }
+};
+
+module.exports = { register, login, googleLogin };
