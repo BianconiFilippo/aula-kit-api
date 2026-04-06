@@ -3,10 +3,11 @@ const supabase = require('./supabase');
 class AuthService {
   
   _mapUser(supabaseUser, fallbackName = 'Usuario') {
+    const metadata = supabaseUser.user_metadata || {};
     return {
       id: supabaseUser.id,
       email: supabaseUser.email,
-      nombreCompleto: supabaseUser.user_metadata?.nombreCompleto || fallbackName
+      nombreCompleto: metadata.nombreCompleto || metadata.full_name || fallbackName
     };
   }
 

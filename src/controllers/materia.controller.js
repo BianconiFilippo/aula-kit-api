@@ -1,5 +1,6 @@
 const materiaService = require('../services/materia.service');
 const { CreateMateriaDto } = require('../dtos/materia.dto');
+const fuenteService = require('../services/fuenteService');
 
 const crearMateria = async (req, res) => {
   const createMateriaDto = new CreateMateriaDto(req.body, req.user.id);
@@ -25,4 +26,21 @@ const obtenerMaterias = async (req, res) => {
   }
 };
 
-module.exports = { crearMateria, obtenerMaterias };
+const subirFuente = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'No se subió ningún archivo' });
+    }
+
+    const fuente = await fuenteService.subirArchivoYGuardar(id, file);
+    return res.status(201).json(fuente);
+  }
+  catch (error) {
+    return res.status(500).json({ error: 'Error al subir la fuente', detalle: error.message });
+  }
+}
+
+module.exports = { crearMateria, obtenerMaterias, subirFuente };
