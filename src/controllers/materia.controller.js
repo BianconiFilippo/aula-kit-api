@@ -1,4 +1,4 @@
-const materiaService = require('../services/materia.service');
+const materiaService = require('../services/materiaService');
 const { CreateMateriaDto } = require('../dtos/materia.dto');
 const fuenteService = require('../services/fuenteService');
 
@@ -26,6 +26,16 @@ const obtenerMaterias = async (req, res) => {
   }
 };
 
+const obtenerMateria = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const materia = await materiaService.getOne(id);
+    return res.status(200).json(materia);
+  } catch (error) {
+    return res.status(500).json({ error: 'Error al obtener la materia' });
+  }
+};
+
 const subirFuente = async (req, res) => {
   try {
     const { id } = req.params;
@@ -43,4 +53,24 @@ const subirFuente = async (req, res) => {
   }
 }
 
-module.exports = { crearMateria, obtenerMaterias, subirFuente };
+const eliminarMateria = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await materiaService.delete(id);
+    return res.status(200).json({ mensaje: 'Materia y sus archivos eliminados correctamente' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const eliminarFuente = async (req, res) => {
+  try {
+    const { fuenteId } = req.params;
+    await fuenteService.eliminarFuente(fuenteId); 
+    return res.status(200).json({ mensaje: 'Archivo eliminado correctamente' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { crearMateria, obtenerMaterias, obtenerMateria, subirFuente, eliminarMateria, eliminarFuente };
