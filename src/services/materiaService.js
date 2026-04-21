@@ -22,8 +22,12 @@ class MateriaService {
   async getOne(id) {
     const materia = await prisma.materia.findUnique({
       where: { id },
-      include: { fuentes: true }
+      include: { 
+        fuentes: true,
+        carpetas: true
+      }
     });
+    if (!materia) throw new Error('Materia no encontrada');
     return new MateriaModel(materia);
   }
 

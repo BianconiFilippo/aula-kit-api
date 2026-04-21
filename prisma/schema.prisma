@@ -22,7 +22,20 @@ model Materia {
   nombre    String
   usuario   Usuario           @relation(fields: [usuarioId], references: [id])
   usuarioId String
+  carpetas  Carpeta[]
   fuentes   FuenteContenido[]
+}
+
+model Carpeta {
+  id        String            @id @default(uuid())
+  nombre    String
+  materia   Materia           @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  materiaId String
+  parent    Carpeta?          @relation("SubCarpetas", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId  String?
+  hijos     Carpeta[]         @relation("SubCarpetas")
+  fuentes   FuenteContenido[]
+  createdAt DateTime          @default(now())
 }
 
 enum TipoContenido {
@@ -36,8 +49,10 @@ enum TipoContenido {
 
 model FuenteContenido {
   id            String              @id @default(uuid())
-  materia       Materia             @relation(fields: [materiaId], references: [id])
+  materia       Materia             @relation(fields: [materiaId], references: [id], onDelete: Cascade)
   materiaId     String
+  carpeta       Carpeta?            @relation(fields: [carpetaId], references: [id], onDelete: Cascade)
+  carpetaId     String?
   tipo          TipoContenido
   urlArchivo    String? // URL de Supabase Storage
   nombreArchivo String?

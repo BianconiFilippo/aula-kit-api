@@ -32,20 +32,25 @@ const obtenerMateria = async (req, res) => {
     const materia = await materiaService.getOne(id);
     return res.status(200).json(materia);
   } catch (error) {
-    return res.status(500).json({ error: 'Error al obtener la materia' });
+    console.error('Error en obtenerMateria:', error);
+    if (error.message === 'Materia no encontrada') {
+      return res.status(404).json({ error: error.message });
+    }
+    return res.status(500).json({ error: 'Error al obtener la materia', detalle: error.message });
   }
 };
 
 const subirFuente = async (req, res) => {
   try {
     const { id } = req.params;
+    const { carpetaId } = req.body;
     const file = req.file;
 
     if (!file) {
       return res.status(400).json({ error: 'No se subió ningún archivo' });
     }
 
-    const fuente = await fuenteService.subirArchivoYGuardar(id, file);
+    const fuente = await fuenteService.subirArchivoYGuardar(id, file, carpetaId);
     return res.status(201).json(fuente);
   }
   catch (error) {

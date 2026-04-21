@@ -3,7 +3,7 @@ const prisma = require('./db');
 const pdf = require('pdf-parse');
 
 class FuenteService {
-  async subirArchivoYGuardar(materiaId, file) {
+  async subirArchivoYGuardar(materiaId, file, carpetaId) {
     const extension = file.originalname.split('.').pop();
     const nombreUnico = `${Date.now()}-${Math.round(Math.random() * 1E9)}.${extension}`;
     const filePath = `${materiaId}/${nombreUnico}`;
@@ -46,6 +46,7 @@ class FuenteService {
     const nuevaFuente = await prisma.fuenteContenido.create({
       data: {
         materiaId: materiaId,
+        carpetaId: carpetaId || null,
         tipo: tipo,
         urlArchivo: publicUrl,
         nombreArchivo: file.originalname,
