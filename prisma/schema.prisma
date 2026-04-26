@@ -1,7 +1,9 @@
 // prisma/schema.prisma
 
 generator client {
-  provider = "prisma-client-js"
+  provider  = "prisma-client-js"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 datasource db {
@@ -18,12 +20,13 @@ model Usuario {
 }
 
 model Materia {
-  id        String            @id @default(uuid())
-  nombre    String
-  usuario   Usuario           @relation(fields: [usuarioId], references: [id])
-  usuarioId String
-  carpetas  Carpeta[]
-  fuentes   FuenteContenido[]
+  id           String              @id @default(uuid())
+  nombre       String
+  usuario      Usuario             @relation(fields: [usuarioId], references: [id])
+  usuarioId    String
+  carpetas     Carpeta[]
+  fuentes      FuenteContenido[]
+  generaciones GeneracionRecurso[]
 }
 
 model Carpeta {
@@ -62,10 +65,12 @@ model FuenteContenido {
 }
 
 model GeneracionRecurso {
-  id            String          @id @default(uuid())
-  fuente        FuenteContenido @relation(fields: [fuenteId], references: [id])
-  fuenteId      String
-  tipoRecurso   String // Resumen, Roadmap, Estructura
+  id            String            @id @default(uuid())
+  titulo        String
+  materia       Materia           @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  materiaId     String
+  fuentes       FuenteContenido[]
+  tipoRecurso   String
   contenidoJson Json
-  createdAt     DateTime        @default(now())
+  createdAt     DateTime          @default(now())
 }

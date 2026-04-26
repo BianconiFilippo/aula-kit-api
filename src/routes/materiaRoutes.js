@@ -27,10 +27,14 @@ router.post('/:id/fuentes', (req, res, next) => {
 }, materiaController.subirFuente);
 router.delete('/:id', authMiddleware, materiaController.eliminarMateria);
 router.delete('/:id/fuentes/:fuenteId', authMiddleware, materiaController.eliminarFuente);
+router.get('/:id/fuentes', materiaController.getFuentesMateria);
 
 // Rutas de carpetas
 router.post('/:id/carpetas', authMiddleware, carpetaController.crearCarpeta);
 router.patch('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.renombrarCarpeta);
 router.delete('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.eliminarCarpeta);
+
+// Rutas AI 
+router.post('/:id/generar-resumen', materiaController.generarResumen);
 
 module.exports = router;
