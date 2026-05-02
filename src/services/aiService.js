@@ -1,13 +1,5 @@
-const { Pool } = require('pg');
-const { PrismaPg } = require('@prisma/adapter-pg');
-const { PrismaClient } = require('@prisma/client');
 const { OpenAI } = require('openai');
-
-const connectionString = process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-
-const prisma = new PrismaClient({ adapter });
+const prisma = require('./db.js');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -36,6 +28,8 @@ async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtr
       textoCombinado = textoCombinado.substring(0, 30000);
     }
 
+    let systemPrompt = "Eres un asistente universitario experto. Tu tarea es leer los textos proporcionados y generar un resumen estructurado. Usa un título principal, una breve introducción, y viñetas para los conceptos clave.";
+
     if(instruccionesExtra && instruccionesExtra.trim().length > 0){
       systemPrompt += `\n\nATENCIÓN - Instrucciones específicas del usuario: ${instruccionesExtra}`;
     }
@@ -47,7 +41,7 @@ async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtr
       messages: [
         {
           role: "system",
-          content: "Eres un asistente universitario experto. Tu tarea es leer los textos proporcionados y generar un resumen estructurado. Usa un título principal, una breve introducción, y viñetas para los conceptos clave."
+          content: systemPrompt
         },
         {
           role: "user",

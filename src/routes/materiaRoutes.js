@@ -5,6 +5,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/upload.middleware');
 const carpetaController = require('../controllers/carpeta.controller');
 const multer = require('multer');
+const libroTemasController = require('../controllers/libroTemas.controller');
 
 // Proteger todas las rutas de materias
 router.use(authMiddleware);
@@ -37,4 +38,10 @@ router.delete('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.elim
 // Rutas AI 
 router.post('/:id/generar-resumen', materiaController.generarResumen);
 
+// Rutas Libro Temas
+router.get('/:id/libro-temas', libroTemasController.getLibroTemasDeMateria);
+router.post('/:id/libro-temas/generar', libroTemasController.generarLibroTemas);
+
+
 module.exports = router;
+
