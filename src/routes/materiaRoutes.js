@@ -41,6 +41,7 @@ router.post('/:id/generar-resumen', materiaController.generarResumen);
 // Rutas Libro Temas
 router.get('/:id/libro-temas', libroTemasController.getLibroTemasDeMateria);
 router.post('/:id/libro-temas/generar', libroTemasController.generarLibroTemas);
+router.post('/:id/libro-temas/guardar', authMiddleware, libroTemasController.guardarLibroDefinitivo);
 
 
 module.exports = router;

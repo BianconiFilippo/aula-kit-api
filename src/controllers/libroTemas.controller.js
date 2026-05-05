@@ -38,8 +38,43 @@ const getLibroTemasDeMateria = async (req, res) => {
     return res.status(500).json({ error: 'Error al cargar el libro de temas.' });
   }
 };
+const guardarLibroDefinitivo = async (req, res) => {
+    try {
+        const materiaId = req.params.id;
+        const { clases } = req.body;
+
+        if (!clases || !Array.isArray(clases)) {
+            return res.status(400).json({ error: "No se enviaron las clases para guardar." });
+        }
+
+        await prisma.registroLibroTema.deleteMany({
+            where: { materiaId: materiaId }
+        });
+        const registrosAInsertar = clases.map(clase => ({
+            materiaId: materiaId,
+            orden: clase.orden,
+            fecha: new Date(clase.fecha), 
+            titulo: clase.titulo,
+            descripcion: clase.descripcion,
+            estado: clase.estado,
+            unidad: clase.unidad || null,
+            caracter: clase.caracter || null,
+            dinamica: clase.dinamica || null,
+            observaciones: clase.observaciones || null
+        }));
+        const resultado = await prisma.registroLibroTema.createMany({
+            data: registrosAInsertar
+        });
+
+        return res.status(201).json({ success: true, count: resultado.count });
+    } catch (error) {
+        console.error("Error al guardar el libro definitivo:", error);
+        return res.status(500).json({ error: "Error interno al guardar los datos."});
+    }
+}
 
 module.exports = {
   generarLibroTemas,
-  getLibroTemasDeMateria
+  getLibroTemasDeMateria,
+  guardarLibroDefinitivo 
 };

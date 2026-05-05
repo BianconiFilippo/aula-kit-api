@@ -49,12 +49,16 @@ model Carpeta {
 }
 
 model RegistroLibroTema {
-  id          String      @id @default(uuid())
-  orden       Int
-  fecha       DateTime
-  titulo      String
-  descripcion String?     @db.Text
-  estado      EstadoClase @default(PENDIENTE)
+  id            String      @id @default(uuid())
+  orden         Int
+  fecha         DateTime
+  titulo        String
+  descripcion   String?     @db.Text
+  estado        EstadoClase @default(PENDIENTE)
+  unidad        String?
+  caracter      String?
+  dinamica      String?
+  observaciones String?     @db.Text
 
   materia   Materia @relation(fields: [materiaId], references: [id], onDelete: Cascade)
   materiaId String
