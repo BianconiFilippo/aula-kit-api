@@ -59,6 +59,7 @@ model RegistroLibroTema {
   caracter      String?
   dinamica      String?
   observaciones String?     @db.Text
+  actividades   String?     @db.Text
 
   materia   Materia @relation(fields: [materiaId], references: [id], onDelete: Cascade)
   materiaId String

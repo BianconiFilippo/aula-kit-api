@@ -73,8 +73,33 @@ const guardarLibroDefinitivo = async (req, res) => {
     }
 }
 
+const actualizarClase = async (req, res) => {
+    try {
+        const { claseId } = req.params;
+        const { unidad, caracter, estado, titulo, actividades, observaciones } = req.body;
+
+        const actualizada = await prisma.registroLibroTema.update({
+            where: { id: claseId },
+            data: {
+                unidad,
+                caracter,
+                estado,
+                titulo,
+                actividades,
+                observaciones
+            }
+        });
+
+        return res.status(200).json({ success: true, data: actualizada });
+    } catch (error) {
+        console.error("Error al actualizar la clase:", error);
+        return res.status(500).json({ error: "Error interno al actualizar la clase." });
+    }
+};
+
 module.exports = {
   generarLibroTemas,
   getLibroTemasDeMateria,
-  guardarLibroDefinitivo 
+  guardarLibroDefinitivo,
+  actualizarClase
 };

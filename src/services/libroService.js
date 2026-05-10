@@ -10,27 +10,30 @@ const axios = require('axios');
 
 const prisma = require('./db.js');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-function calcularFechasClases(fechaInicioStr, fechaFinStr, diasCursada, feriados = []) {
-  const fechas = [];
-  
-  let fechaActual = new Date(fechaInicioStr);
-  const fin = new Date(fechaFinStr);
 
-  fechaActual.setHours(12, 0, 0, 0);
-  fin.setHours(12, 0, 0, 0);
+function calcularFechasModulos(fechaInicio, fechaFin, configDias, feriados) {
+    let fechas = [];
+    let actual = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
 
-  while (fechaActual <= fin) {
-    const diaSemana = fechaActual.getDay(); 
-    const fechaFormatoString = fechaActual.toISOString().split('T')[0]; 
+    while (actual <= fin) {
+      const diaSemana = actual.getDay();
+      const configDia = configDias.find(d => d.dia === diaSemana);
+      
+      if (configDia) {
+        const fechaStr = actual.toISOString().split('T')[0];
+        const esFeriado = feriados.includes(fechaStr);
 
-    if (diasCursada.includes(diaSemana) && !feriados.includes(fechaFormatoString)) {
-      fechas.push(new Date(fechaActual));
+        for (let i = 0; i < configDia.modulos; i++) {
+            fechas.push({
+                fecha: new Date(actual),
+                esFeriado: esFeriado
+            });
+        }
+      }
+      actual.setDate(actual.getDate() + 1);
     }
-    
-    fechaActual.setDate(fechaActual.getDate() + 1);
-  }
-
-  return fechas;
+    return fechas;
 }
 
 
@@ -45,17 +48,19 @@ async function generarLibroTemasIA(materiaId, fuenteIds, configFechas, instrucci
         console.error("No se pudieron obtener los feriados de Nager.Date", apiError);
     }
 
-    const fechasExactas = calcularFechasClases(
+    const todosLosFeriados = [...feriadosOficiales, ...(configFechas.feriados || [])];
+
+    const fechasExactas = calcularFechasModulos(
       configFechas.fechaInicio,
       configFechas.fechaFin,
       configFechas.diasCursada,
-      feriadosOficiales
+      todosLosFeriados
     );
 
     const cantidadClases = fechasExactas.length;
 
     if (cantidadClases === 0) {
-      throw new Error('La configuración de fechas no genera ningún día de clase válido.');
+      throw new Error('La configuración de fechas no genera ningún módulo de clase válido.');
     }
 
     const fuentes = await prisma.fuenteContenido.findMany({
@@ -69,11 +74,10 @@ async function generarLibroTemasIA(materiaId, fuenteIds, configFechas, instrucci
 
     let systemPrompt = `
       Eres un planificador académico experto.
-      Tu tarea es dividir el contenido en EXACTAMENTE ${cantidadClases} clases.
+      Tu tarea es dividir el contenido en EXACTAMENTE ${cantidadClases} módulos/clases.
+      Ten en cuenta que puede haber varios módulos en un mismo día.
       
-      REGLA ESTRICTA DE FERIADOS:
-      Si una clase cae en una de estas fechas ${JSON.stringify(todosLosFeriados)}, NO asignes temario.
-      Debe tener título "FERIADO NACIONAL", estado "CANCELADA", y los demás campos vacíos.
+      REGLA DE FERIADOS: Si la fecha coincide con un feriado, debes generar el objeto con título: "FERIADO NACIONAL" y estado: "CANCELADA".
 
       FORMATO DE SALIDA ESTRICTO (JSON):
       {
@@ -81,9 +85,8 @@ async function generarLibroTemasIA(materiaId, fuenteIds, configFechas, instrucci
           {
             "unidad": "Unidad X (o vacío)",
             "caracter": "Teórica, Práctica, Teórico-Práctica o Evaluación",
-            "titulo": "Tema abordado en la clase",
-            "dinamica": "Breve descripción de la dinámica (ej: Exposición, Taller, Debate)",
-            "descripcion": "Descripción extendida (opcional)",
+            "titulo": "Tema central de este módulo",
+            "actividades": "Actividades propuestas para los alumnos en este módulo",
             "estado": "PENDIENTE"
           }
         ]
@@ -99,7 +102,7 @@ async function generarLibroTemasIA(materiaId, fuenteIds, configFechas, instrucci
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Genera la planificación para ${cantidadClases} clases basándote en este contenido:\n\n${textoCombinado}` }
+        { role: "user", content: `Genera la planificación para ${cantidadClases} módulos basándote en este contenido:\n\n${textoCombinado}` }
       ]
     });
 
@@ -108,23 +111,22 @@ async function generarLibroTemasIA(materiaId, fuenteIds, configFechas, instrucci
     
     const clasesGeneradas = respuestaJSON.clases || [];
     
-    const clasesConFechas = fechasExactas.map((fecha, i) => {
-        const claseIA = clasesGeneradas[i] || { titulo: "Clase de Repaso", descripcion: "Contenido pendiente de asignación", estado: 'PENDIENTE' };
-        return {
+    const borradorClases = fechasExactas.map((item, i) => {
+      const temaIA = clasesGeneradas[i] || { titulo: "Clase de Repaso", estado: "PENDIENTE" };
+      return {
         orden: i + 1,
-        fecha: fecha,
-        unidad: temaIA.unidad || '',
-        caracter: temaIA.caracter || 'Teórica',
-        titulo: temaIA.titulo || '',
-        dinamica: temaIA.dinamica || 'Exposición dialogada',
-        descripcion: temaIA.descripcion || '',
+        fecha: item.fecha,
+        unidad: item.esFeriado ? '' : (temaIA.unidad || ''),
+        caracter: item.esFeriado ? '' : (temaIA.caracter || 'Teórica'),
+        titulo: item.esFeriado ? 'FERIADO NACIONAL' : (temaIA.titulo || ''),
+        actividades: item.esFeriado ? 'Día no laborable' : (temaIA.actividades || ''),
         observaciones: '',
-        estado: temaIA.estado || 'PENDIENTE'
+        estado: item.esFeriado ? 'CANCELADA' : (temaIA.estado || 'PENDIENTE')
       };
-     });
-
-    return clasesConFechas;
-
+    });
+    
+    return borradorClases;
+    
   } catch (error) {
     console.error("Error en generarLibroTemasIA:", error);
     throw error;
@@ -132,6 +134,6 @@ async function generarLibroTemasIA(materiaId, fuenteIds, configFechas, instrucci
 }
 
 module.exports = {
-  calcularFechasClases,
+  calcularFechasModulos,
   generarLibroTemasIA
 };

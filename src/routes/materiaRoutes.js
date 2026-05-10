@@ -42,6 +42,7 @@ router.post('/:id/generar-resumen', materiaController.generarResumen);
 router.get('/:id/libro-temas', libroTemasController.getLibroTemasDeMateria);
 router.post('/:id/libro-temas/generar', libroTemasController.generarLibroTemas);
 router.post('/:id/libro-temas/guardar', authMiddleware, libroTemasController.guardarLibroDefinitivo);
+router.put('/:id/libro-temas/:claseId', authMiddleware, libroTemasController.actualizarClase);
 
 
 module.exports = router;
