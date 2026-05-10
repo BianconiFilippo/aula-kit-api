@@ -54,12 +54,11 @@ const guardarLibroDefinitivo = async (req, res) => {
             materiaId: materiaId,
             orden: clase.orden,
             fecha: new Date(clase.fecha), 
-            titulo: clase.titulo,
-            descripcion: clase.descripcion,
-            estado: clase.estado,
+            titulo: clase.titulo || "",
+            actividades: clase.actividades || null, 
+            estado: clase.estado || "PENDIENTE",
             unidad: clase.unidad || null,
             caracter: clase.caracter || null,
-            dinamica: clase.dinamica || null,
             observaciones: clase.observaciones || null
         }));
         const resultado = await prisma.registroLibroTema.createMany({

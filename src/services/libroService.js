@@ -13,14 +13,14 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 function calcularFechasModulos(fechaInicio, fechaFin, configDias, feriados) {
     let fechas = [];
-    let actual = new Date(fechaInicio);
-    const fin = new Date(fechaFin);
+    let actual = new Date(fechaInicio + "T12:00:00Z");
+    const fin = new Date(fechaFin + "T12:00:00Z");
 
     while (actual <= fin) {
-      const diaSemana = actual.getDay();
+      const diaSemana = actual.getUTCDay(); 
       const configDia = configDias.find(d => d.dia === diaSemana);
       
-      if (configDia) {
+      if (configDia && configDia.modulos > 0) {
         const fechaStr = actual.toISOString().split('T')[0];
         const esFeriado = feriados.includes(fechaStr);
 
@@ -31,7 +31,7 @@ function calcularFechasModulos(fechaInicio, fechaFin, configDias, feriados) {
             });
         }
       }
-      actual.setDate(actual.getDate() + 1);
+      actual.setUTCDate(actual.getUTCDate() + 1); 
     }
     return fechas;
 }
