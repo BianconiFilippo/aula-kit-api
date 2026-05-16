@@ -92,12 +92,23 @@ model FuenteContenido {
 }
 
 model GeneracionRecurso {
-  id            String            @id @default(uuid())
-  titulo        String
-  materia       Materia           @relation(fields: [materiaId], references: [id], onDelete: Cascade)
-  materiaId     String
-  fuentes       FuenteContenido[]
-  tipoRecurso   String
-  contenidoJson Json
-  createdAt     DateTime          @default(now())
+  id        String      @id @default(uuid())
+  materiaId String
+  tipo      TipoRecurso
+  titulo    String
+  contenido String      @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  materia           Materia          @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  fuenteContenido   FuenteContenido? @relation(fields: [fuenteContenidoId], references: [id])
+  fuenteContenidoId String?
+}
+
+enum TipoRecurso {
+  RESUMEN
+  GUIA_ESTUDIO
+  EVALUACION
+  MAPA_CONCEPTUAL
 }
