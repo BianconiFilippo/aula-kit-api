@@ -52,20 +52,7 @@ async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtr
 
     const textoResumen = completion.choices[0].message.content;
 
-    
-    const nuevoRecurso = await prisma.generacionRecurso.create({
-      data: {
-        titulo: `Resumen de ${fuentes.length} archivo(s)`,
-        tipoRecurso: 'RESUMEN',
-        contenidoJson: { texto: textoResumen }, 
-        materiaId: materiaId,
-        fuentes: {
-          connect: fuenteIds.map(id => ({ id })) 
-        }
-      }
-    });
-
-    return nuevoRecurso;
+    return textoResumen;
 
   } catch (error) {
     console.error("Error en el servicio de IA:", error);

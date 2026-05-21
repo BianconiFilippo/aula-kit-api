@@ -4,15 +4,16 @@ const libroTemasService = require('../services/libroService');
 const generarLibroTemas = async (req, res) => {
   try {
     const materiaId = req.params.id;
-    const { fuenteIds, configFechas, instruccionesExtra } = req.body;
 
-    if (!configFechas || !configFechas.fechaInicio || !configFechas.fechaFin || !configFechas.diasCursada) {
-      return res.status(400).json({ error: 'Faltan datos en la configuración de fechas.' });
+    const { estructuraRequerida, instruccionesExtra } = req.body;
+
+    if (!estructuraRequerida || !Array.isArray(estructuraRequerida) || estructuraRequerida.length === 0) {
+      return res.status(400).json({ error: 'Falta la estructura requerida de clases o está vacía.' });
     }
+
     const resultado = await libroTemasService.generarLibroTemasIA(
-      materiaId, 
-      fuenteIds, 
-      configFechas, 
+      materiaId,
+      estructuraRequerida,
       instruccionesExtra
     );
 
@@ -38,62 +39,65 @@ const getLibroTemasDeMateria = async (req, res) => {
     return res.status(500).json({ error: 'Error al cargar el libro de temas.' });
   }
 };
+
 const guardarLibroDefinitivo = async (req, res) => {
-    try {
-        const materiaId = req.params.id;
-        const { clases } = req.body;
+  try {
+    const materiaId = req.params.id;
+    const { clases } = req.body;
 
-        if (!clases || !Array.isArray(clases)) {
-            return res.status(400).json({ error: "No se enviaron las clases para guardar." });
-        }
-
-        await prisma.registroLibroTema.deleteMany({
-            where: { materiaId: materiaId }
-        });
-        const registrosAInsertar = clases.map(clase => ({
-            materiaId: materiaId,
-            orden: clase.orden,
-            fecha: new Date(clase.fecha), 
-            titulo: clase.titulo || "",
-            actividades: clase.actividades || null, 
-            estado: clase.estado || "PENDIENTE",
-            unidad: clase.unidad || null,
-            caracter: clase.caracter || null,
-            observaciones: clase.observaciones || null
-        }));
-        const resultado = await prisma.registroLibroTema.createMany({
-            data: registrosAInsertar
-        });
-
-        return res.status(201).json({ success: true, count: resultado.count });
-    } catch (error) {
-        console.error("Error al guardar el libro definitivo:", error);
-        return res.status(500).json({ error: "Error interno al guardar los datos."});
+    if (!clases || !Array.isArray(clases)) {
+      return res.status(400).json({ error: "No se enviaron las clases para guardar." });
     }
+
+    await prisma.registroLibroTema.deleteMany({
+      where: { materiaId: materiaId }
+    });
+
+    const registrosAInsertar = clases.map(clase => ({
+      materiaId: materiaId,
+      orden: clase.orden,
+      fecha: new Date(clase.fecha),
+      titulo: clase.titulo || "",
+      actividades: clase.actividades || null,
+      estado: clase.estado || "PENDIENTE",
+      unidad: clase.unidad || null,
+      caracter: clase.caracter || null,
+      observaciones: clase.observaciones || null
+    }));
+
+    const resultado = await prisma.registroLibroTema.createMany({
+      data: registrosAInsertar
+    });
+
+    return res.status(201).json({ success: true, count: resultado.count });
+  } catch (error) {
+    console.error("Error al guardar el libro definitivo:", error);
+    return res.status(500).json({ error: "Error interno al guardar los datos." });
+  }
 }
 
 const actualizarClase = async (req, res) => {
-    try {
-        const { claseId } = req.params;
-        const { unidad, caracter, estado, titulo, actividades, observaciones } = req.body;
+  try {
+    const { claseId } = req.params;
+    const { unidad, caracter, estado, titulo, actividades, observaciones } = req.body;
 
-        const actualizada = await prisma.registroLibroTema.update({
-            where: { id: claseId },
-            data: {
-                unidad,
-                caracter,
-                estado,
-                titulo,
-                actividades,
-                observaciones
-            }
-        });
+    const actualizada = await prisma.registroLibroTema.update({
+      where: { id: claseId },
+      data: {
+        unidad,
+        caracter,
+        estado,
+        titulo,
+        actividades,
+        observaciones
+      }
+    });
 
-        return res.status(200).json({ success: true, data: actualizada });
-    } catch (error) {
-        console.error("Error al actualizar la clase:", error);
-        return res.status(500).json({ error: "Error interno al actualizar la clase." });
-    }
+    return res.status(200).json({ success: true, data: actualizada });
+  } catch (error) {
+    console.error("Error al actualizar la clase:", error);
+    return res.status(500).json({ error: "Error interno al actualizar la clase." });
+  }
 };
 
 module.exports = {
