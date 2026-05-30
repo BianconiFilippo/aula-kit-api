@@ -31,13 +31,5 @@ const login = async (req, res) => {
   }
 };
 
-const googleLogin = async (req, res) => {
-  try {
-    const url = await authService.signInWithGoogle();
-    res.redirect(url);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al inicializar Google Auth', detalle: error.message });
-  }
-};
 
-module.exports = { register, login, googleLogin };
+module.exports = { register, login };

@@ -44,17 +44,6 @@ class AuthService {
     };
   }
 
-  async signInWithGoogle() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/login`,
-      },
-    });
-
-    if (error) throw error;
-    return data.url;
-  }
 }
 
 module.exports = new AuthService();
