@@ -1,7 +1,7 @@
 const supabase = require('./supabase');
 
 class AuthService {
-  
+
   _mapUser(supabaseUser, fallbackName = 'Usuario') {
     const metadata = supabaseUser.user_metadata || {};
     return {
@@ -17,7 +17,7 @@ class AuthService {
       password: registerDto.password,
       options: {
         data: {
-          nombreCompleto: registerDto.nombreCompleto 
+          nombreCompleto: registerDto.nombreCompleto
         }
       }
     });
@@ -48,12 +48,12 @@ class AuthService {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'http://localhost:4200/auth/login', 
+        redirectTo: `${window.location.origin}/auth/login`,
       },
     });
 
     if (error) throw error;
-    return data.url; 
+    return data.url;
   }
 }
 
