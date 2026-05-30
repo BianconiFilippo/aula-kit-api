@@ -7,11 +7,11 @@ const openai = new OpenAI({
 
 async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtra = '') {
   try {
-    
+
     const fuentes = await prisma.fuenteContenido.findMany({
       where: {
         id: { in: fuenteIds },
-        materiaId: materiaId 
+        materiaId: materiaId
       }
     });
 
@@ -30,7 +30,7 @@ async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtr
 
     let systemPrompt = "Eres un asistente universitario experto. Tu tarea es leer los textos proporcionados y generar un resumen estructurado. Usa un título principal, una breve introducción, y viñetas para los conceptos clave.";
 
-    if(instruccionesExtra && instruccionesExtra.trim().length > 0){
+    if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
       systemPrompt += `\n\nATENCIÓN - Instrucciones específicas del usuario: ${instruccionesExtra}`;
     }
 

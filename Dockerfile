@@ -1,0 +1,44 @@
+# --- ETAPA 1: Construcción (Builder) ---
+# Usamos una imagen ligera de Node
+FROM node:20-slim AS builder
+
+# Instalamos openssl (Requerido estrictamente por Prisma)
+RUN apt-get update -y && apt-get install -y openssl
+
+# Establecemos la carpeta de trabajo dentro del servidor
+WORKDIR /app
+
+# Copiamos los archivos de dependencias y la carpeta de prisma primero
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Instalamos TODAS las dependencias
+RUN npm install
+
+# Generamos el cliente de Prisma (¡Paso crítico para que la BD funcione!)
+RUN npx prisma generate
+
+# Copiamos el resto del código de la aplicación (la carpeta src, etc.)
+COPY . .
+
+# --- ETAPA 2: Producción (Runner) ---
+# Empezamos desde cero con una imagen limpia para que el servidor pese menos
+FROM node:20-slim AS runner
+
+# Volvemos a instalar openssl en la imagen final
+RUN apt-get update -y && apt-get install -y openssl
+
+WORKDIR /app
+
+# Copiamos SOLO lo estrictamente necesario desde la Etapa 1
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/src ./src
+
+# Exponemos el puerto que usará tu API
+EXPOSE 3000
+
+# Comando para iniciar la aplicación
+# NOTA: Esto asume que en tu package.json tienes un script "start": "node src/index.js" (o server.js)
+CMD ["npm", "start"]
