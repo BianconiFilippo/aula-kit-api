@@ -3,9 +3,12 @@ const router = express.Router();
 const axios = require('axios');
 const authRoutes = require('./authRoutes');
 const materiaRoutes = require('./materiaRoutes');
+const authenticate = require('../middlewares/auth.middleware');
 
 router.use('/auth', authRoutes);
-router.use('/materias', materiaRoutes);
+router.use('/materias', authenticate, materiaRoutes);
+
+
 
 router.get('/feriados/:anio', async (req, res) => {
   try {
