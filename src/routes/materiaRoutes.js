@@ -48,6 +48,8 @@ router.put('/:id/libro-temas/:claseId', authMiddleware, libroTemasController.act
 // Rutas de Recursos (Generados por IA)
 router.get('/:id/recursos', recursoController.obtenerRecursosPorMateria);
 router.post('/:id/recursos', recursoController.guardarRecurso);
+router.get('/:id/recursos/:recursoId', recursoController.obtenerRecursoPorId);
+router.put('/:id/recursos/:recursoId', recursoController.actualizarRecurso);
 
 
 module.exports = router;

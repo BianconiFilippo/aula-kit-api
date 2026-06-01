@@ -66,8 +66,49 @@ async function obtenerRecursosPorMateria(req, res) {
   }
 }
 
+async function obtenerRecursoPorId(req, res) {
+  try {
+    const { recursoId } = req.params;
+
+    const recurso = await prisma.generacionRecurso.findUnique({
+      where: { id: recursoId }
+    });
+
+    if (!recurso) {
+      return res.status(404).json({ error: 'Recurso no encontrado' });
+    }
+
+    return res.status(200).json(recurso);
+  } catch (error) {
+    console.error('Error al obtener el recurso:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+async function actualizarRecurso(req, res) {
+  try {
+    const { recursoId } = req.params;
+    const { titulo, contenido } = req.body;
+
+    const recurso = await prisma.generacionRecurso.update({
+      where: { id: recursoId },
+      data: {
+        titulo,
+        contenido
+      }
+    });
+
+    return res.status(200).json(recurso);
+  } catch (error) {
+    console.error('Error al actualizar el recurso:', error);
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
 module.exports = {
   generarResumen,
   guardarRecurso,
-  obtenerRecursosPorMateria
+  obtenerRecursosPorMateria,
+  obtenerRecursoPorId,
+  actualizarRecurso
 };
