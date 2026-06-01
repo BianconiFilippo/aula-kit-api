@@ -28,16 +28,22 @@ async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtr
       textoCombinado = textoCombinado.substring(0, 30000);
     }
 
-    let systemPrompt = "Eres un asistente universitario experto. Tu tarea es leer los textos proporcionados y generar un resumen estructurado. Usa un título principal, una breve introducción, y viñetas para los conceptos clave.";
+    let systemPrompt = `Actúa como un asistente pedagógico experto. Tu tarea es leer los textos proporcionados y generar un recurso pedagógico estructurado.
+Debes devolver estrictamente un objeto JSON con la siguiente estructura exacta:
+{
+  "titulo": "string",
+  "resumen_ejecutivo": "string",
+  "conceptos_clave": ["string", "string"],
+  "actividades_sugeridas": ["string", "string"]
+}`;
 
     if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
       systemPrompt += `\n\nATENCIÓN - Instrucciones específicas del usuario: ${instruccionesExtra}`;
     }
 
-
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
@@ -51,8 +57,9 @@ async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtr
     });
 
     const textoResumen = completion.choices[0].message.content;
+    const objetoResumen = JSON.parse(textoResumen);
 
-    return textoResumen;
+    return objetoResumen;
 
   } catch (error) {
     console.error("Error en el servicio de IA:", error);

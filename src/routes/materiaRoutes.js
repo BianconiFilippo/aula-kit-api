@@ -37,7 +37,7 @@ router.patch('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.renom
 router.delete('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.eliminarCarpeta);
 
 // Rutas AI 
-router.post('/:id/generar-resumen', materiaController.generarResumen);
+router.post('/:id/generar-resumen', recursoController.generarResumen);
 
 // Rutas Libro Temas
 router.get('/:id/libro-temas', libroTemasController.getLibroTemasDeMateria);

@@ -1,7 +1,6 @@
 const materiaService = require('../services/materiaService');
 const { CreateMateriaDto } = require('../dtos/materia.dto');
 const fuenteService = require('../services/fuenteService');
-const { generarResumenMultifuente } = require('../services/aiService');
 const prisma = require('../services/db');
 
 const crearMateria = async (req, res) => {
@@ -80,31 +79,7 @@ const eliminarFuente = async (req, res) => {
   }
 };
 
-const generarResumen = async (req, res) => {
-  try {
-    const materiaId = req.params.id;
-    const { fuenteIds, instruccionesExtra } = req.body;
 
-    if (!fuenteIds || !Array.isArray(fuenteIds) || fuenteIds.length === 0) {
-      return res.status(400).json({ 
-        error: 'Debes seleccionar al menos un archivo para generar el resumen.' 
-      });
-    }
-
-    const nuevoRecurso = await generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtra);
-
-    return res.status(201).json({
-      mensaje: 'Resumen generado con éxito',
-      data: nuevoRecurso
-    });
-
-  } catch (error) {
-    console.error('Error al procesar el resumen en el controlador:', error);
-    return res.status(500).json({ 
-      error: 'Hubo un problema al generar el resumen con Inteligencia Artificial.' 
-    });
-  }
-};
 
 const getFuentesMateria = async (req, res) => {
   try {
@@ -131,4 +106,4 @@ const getFuentesMateria = async (req, res) => {
   }
 }
 
-module.exports = { crearMateria, obtenerMaterias, obtenerMateria, subirFuente, eliminarMateria, eliminarFuente, generarResumen, getFuentesMateria };
+module.exports = { crearMateria, obtenerMaterias, obtenerMateria, subirFuente, eliminarMateria, eliminarFuente, getFuentesMateria };

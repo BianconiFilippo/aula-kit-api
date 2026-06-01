@@ -1,4 +1,30 @@
 const prisma = require('../services/db');
+const { generarResumenMultifuente } = require('../services/aiService');
+
+async function generarResumen(req, res) {
+  try {
+    const materiaId = req.params.id;
+    const { fuenteIds, instruccionesExtra } = req.body;
+
+    if (!fuenteIds || !Array.isArray(fuenteIds) || fuenteIds.length === 0) {
+      return res.status(400).json({ 
+        error: 'Debes seleccionar al menos un archivo para generar el resumen.' 
+      });
+    }
+
+    const nuevoRecurso = await generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtra);
+
+    return res.status(200).json({
+      mensaje: 'Recurso generado con éxito',
+      datos: nuevoRecurso
+    });
+  } catch (error) {
+    console.error('Error al procesar el resumen en el controlador:', error);
+    return res.status(500).json({ 
+      error: 'Hubo un problema al generar el recurso con Inteligencia Artificial.' 
+    });
+  }
+}
 
 async function guardarRecurso(req, res) {
   try {
@@ -41,6 +67,7 @@ async function obtenerRecursosPorMateria(req, res) {
 }
 
 module.exports = {
+  generarResumen,
   guardarRecurso,
   obtenerRecursosPorMateria
 };
