@@ -28,14 +28,21 @@ async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtr
       textoCombinado = textoCombinado.substring(0, 30000);
     }
 
-    let systemPrompt = `Actúa como un asistente pedagógico experto. Tu tarea es leer los textos proporcionados y generar un recurso pedagógico estructurado.
+    let systemPrompt = `Actúa como un asistente pedagógico experto. Tu tarea es leer los textos proporcionados y generar un recurso pedagógico estructurado y profundo.
 Debes devolver estrictamente un objeto JSON con la siguiente estructura exacta:
 {
-  "titulo": "string",
-  "resumen_ejecutivo": "string",
-  "conceptos_clave": ["string", "string"],
-  "actividades_sugeridas": ["string", "string"]
-}`;
+  "titulo_principal": "string",
+  "secciones": [
+    {
+      "titulo": "string",
+      "contenido": "string"
+    }
+  ],
+  "conceptos_clave": ["string"],
+  "actividades_sugeridas": ["string"]
+}
+
+Analiza el texto y genera múltiples objetos dentro del array 'secciones'. Cada sección debe representar un apartado lógico del documento, con su respectivo título y un desarrollo profundo en contenido.`;
 
     if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
       systemPrompt += `\n\nATENCIÓN - Instrucciones específicas del usuario: ${instruccionesExtra}`;
