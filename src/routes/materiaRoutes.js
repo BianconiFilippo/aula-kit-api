@@ -7,6 +7,7 @@ const carpetaController = require('../controllers/carpeta.controller');
 const multer = require('multer');
 const libroTemasController = require('../controllers/libroTemas.controller');
 const recursoController = require('../controllers/recurso.controller');
+const { aiGenerationLimiter } = require('../middlewares/rateLimiter.middleware');
 
 // Proteger todas las rutas de materias
 router.use(authMiddleware);
@@ -37,7 +38,7 @@ router.patch('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.renom
 router.delete('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.eliminarCarpeta);
 
 // Rutas AI 
-router.post('/:id/generar-resumen', recursoController.generarResumen);
+router.post('/:id/generar-resumen', aiGenerationLimiter, recursoController.generarResumen);
 
 // Rutas Libro Temas
 router.get('/:id/libro-temas', libroTemasController.getLibroTemasDeMateria);

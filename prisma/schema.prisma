@@ -17,12 +17,15 @@ enum EstadoClase {
 }
 
 model Usuario {
-  id             String    @id @default(uuid())
-  email          String    @unique
-  nombreCompleto String?
-  planActual     String    @default("gratis")
-  materias       Materia[]
-  createdAt      DateTime  @default(now())
+  id                      String    @id @default(uuid())
+  email                   String    @unique
+  nombreCompleto          String?
+  planActual              String    @default("gratis")
+  tier                    String    @default("free")
+  peticiones_ia_restantes Int       @default(3)
+  fecha_ultimo_reinicio   DateTime?
+  materias                Materia[]
+  createdAt               DateTime  @default(now())
 }
 
 model Materia {

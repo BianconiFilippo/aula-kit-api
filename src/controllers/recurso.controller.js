@@ -5,6 +5,11 @@ async function generarResumen(req, res) {
   try {
     const materiaId = req.params.id;
     const { fuenteIds, instruccionesExtra } = req.body;
+    const usuarioId = req.user?.id;
+
+    if (!usuarioId) {
+      return res.status(401).json({ error: 'Acceso denegado. Usuario no autenticado.' });
+    }
 
     if (!fuenteIds || !Array.isArray(fuenteIds) || fuenteIds.length === 0) {
       return res.status(400).json({ 
@@ -12,7 +17,72 @@ async function generarResumen(req, res) {
       });
     }
 
+    // 1. Obtener datos de consumo del usuario local
+    let dbUser = await prisma.usuario.findUnique({
+      where: { id: usuarioId }
+    });
+
+    // Sincronización automática de seguridad si el trigger no ha corrido
+    if (!dbUser) {
+      dbUser = await prisma.usuario.create({
+        data: {
+          id: usuarioId,
+          email: req.user.email,
+          nombreCompleto: req.user.user_metadata?.nombreCompleto || req.user.user_metadata?.full_name || 'Usuario',
+          tier: 'free',
+          peticiones_ia_restantes: 3,
+          fecha_ultimo_reinicio: new Date()
+        }
+      });
+    }
+
+    // Evaluación Lazy de Reinicio Mensual
+    const ahora = new Date();
+    let necesitaReinicio = false;
+
+    if (!dbUser.fecha_ultimo_reinicio) {
+      necesitaReinicio = true;
+    } else {
+      const fechaUltimo = new Date(dbUser.fecha_ultimo_reinicio);
+      if (fechaUltimo.getMonth() !== ahora.getMonth() || fechaUltimo.getFullYear() !== ahora.getFullYear()) {
+        necesitaReinicio = true;
+      }
+    }
+
+    if (necesitaReinicio) {
+      dbUser = await prisma.usuario.update({
+        where: { id: usuarioId },
+        data: {
+          peticiones_ia_restantes: 5, // Límite por defecto mensual
+          fecha_ultimo_reinicio: ahora
+        }
+      });
+    }
+
+    // 2. Control de Tiers y Límite de Consumo
+    if (dbUser.tier !== 'premium') {
+      if (dbUser.peticiones_ia_restantes <= 0) {
+        return res.status(403).json({
+          error: 'Límite gratuito alcanzado',
+          code: 'LIMIT_REACHED'
+        });
+      }
+    }
+
+    // 3. Generación mediante OpenAI Service
     const nuevoRecurso = await generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtra);
+
+    // 4. Descontar petición solo tras respuesta OpenAI exitosa
+    if (dbUser.tier !== 'premium') {
+      await prisma.usuario.update({
+        where: { id: usuarioId },
+        data: {
+          peticiones_ia_restantes: {
+            decrement: 1
+          }
+        }
+      });
+    }
 
     return res.status(200).json({
       mensaje: 'Recurso generado con éxito',

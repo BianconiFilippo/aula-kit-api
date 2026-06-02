@@ -1,6 +1,8 @@
 const authService = require('../services/authService');
 const { RegisterDto, LoginDto } = require('../dtos/auth.dto');
 
+const prisma = require('../services/db');
+
 const register = async (req, res) => {
   const registerDto = new RegisterDto(req.body);
 
@@ -31,5 +33,30 @@ const login = async (req, res) => {
   }
 };
 
+const obtenerPerfil = async (req, res) => {
+  try {
+    const usuarioId = req.user.id;
+    let dbUser = await prisma.usuario.findUnique({
+      where: { id: usuarioId }
+    });
 
-module.exports = { register, login };
+    if (!dbUser) {
+      dbUser = await prisma.usuario.create({
+        data: {
+          id: usuarioId,
+          email: req.user.email,
+          nombreCompleto: req.user.user_metadata?.nombreCompleto || req.user.user_metadata?.full_name || 'Usuario',
+          tier: 'free',
+          peticiones_ia_restantes: 3
+        }
+      });
+    }
+
+    return res.status(200).json(dbUser);
+  } catch (error) {
+    console.error('Error al obtener perfil:', error);
+    return res.status(500).json({ error: 'Error al obtener el perfil del usuario' });
+  }
+};
+
+module.exports = { register, login, obtenerPerfil };
