@@ -1,5 +1,5 @@
 const prisma = require('../services/db');
-const { generarResumenMultifuente } = require('../services/aiService');
+const { generarResumenMultifuente, generarClase: generarClaseIA } = require('../services/aiService');
 
 async function generarResumen(req, res) {
   try {
@@ -175,8 +175,125 @@ async function actualizarRecurso(req, res) {
   }
 }
 
+async function generarClase(req, res) {
+  try {
+    const materiaId = req.params.id;
+    const { material_id, instrucciones_extra } = req.body;
+    const usuarioId = req.user?.id;
+
+    if (!usuarioId) {
+      return res.status(401).json({ error: 'Acceso denegado. Usuario no autenticado.' });
+    }
+
+    if (!material_id) {
+      return res.status(400).json({ error: 'Debes proporcionar el campo material_id.' });
+    }
+
+    // 1. Verificar que el material existe y pertenece a la materia
+    const fuente = await prisma.fuenteContenido.findFirst({
+      where: { id: material_id, materiaId: materiaId }
+    });
+
+    if (!fuente) {
+      return res.status(404).json({
+        error: 'Material base no encontrado o no pertenece a esta materia.'
+      });
+    }
+
+    if (!fuente.textoExtraido || fuente.textoExtraido.trim().length === 0) {
+      return res.status(400).json({
+        error: 'El material seleccionado no tiene texto extraído. Sube un archivo con contenido de texto.'
+      });
+    }
+
+    // 2. Obtener datos del usuario y verificar créditos
+    let dbUser = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+
+    if (!dbUser) {
+      dbUser = await prisma.usuario.create({
+        data: {
+          id: usuarioId,
+          email: req.user.email,
+          nombreCompleto: req.user.user_metadata?.nombreCompleto || req.user.user_metadata?.full_name || 'Usuario',
+          tier: 'free',
+          peticiones_ia_restantes: 3,
+          fecha_ultimo_reinicio: new Date()
+        }
+      });
+    }
+
+    // 3. Evaluación lazy de reinicio mensual
+    const ahora = new Date();
+    let necesitaReinicio = false;
+
+    if (!dbUser.fecha_ultimo_reinicio) {
+      necesitaReinicio = true;
+    } else {
+      const fechaUltimo = new Date(dbUser.fecha_ultimo_reinicio);
+      if (
+        fechaUltimo.getMonth() !== ahora.getMonth() ||
+        fechaUltimo.getFullYear() !== ahora.getFullYear()
+      ) {
+        necesitaReinicio = true;
+      }
+    }
+
+    if (necesitaReinicio) {
+      dbUser = await prisma.usuario.update({
+        where: { id: usuarioId },
+        data: { peticiones_ia_restantes: 5, fecha_ultimo_reinicio: ahora }
+      });
+    }
+
+    // 4. Control de tiers y límite de consumo
+    if (dbUser.tier !== 'premium') {
+      if (dbUser.peticiones_ia_restantes <= 0) {
+        return res.status(403).json({
+          error: 'Límite gratuito alcanzado',
+          code: 'LIMIT_REACHED'
+        });
+      }
+    }
+
+    // 5. Truncar texto si es muy largo
+    let textoBase = fuente.textoExtraido;
+    if (textoBase.length > 30000) {
+      console.warn('generarClase: texto truncado por longitud excesiva.');
+      textoBase = textoBase.substring(0, 30000);
+    }
+
+    // 6. Llamada a la IA
+    const claseGenerada = await generarClaseIA(textoBase, instrucciones_extra || '');
+
+    // 7. Descontar crédito solo tras respuesta exitosa
+    if (dbUser.tier !== 'premium') {
+      await prisma.usuario.update({
+        where: { id: usuarioId },
+        data: { peticiones_ia_restantes: { decrement: 1 } }
+      });
+    }
+
+    return res.status(200).json({
+      mensaje: 'Clase generada con éxito',
+      datos: claseGenerada
+    });
+  } catch (error) {
+    console.error('Error al generar la clase:', error);
+
+    // Error de validación de estructura JSON de la IA
+    if (error.message.includes('formato inválido') || error.message.includes('campos requeridos')) {
+      return res.status(502).json({ error: error.message });
+    }
+
+    return res.status(500).json({
+      error: 'Hubo un problema al generar la clase con Inteligencia Artificial.'
+    });
+  }
+}
+
 module.exports = {
   generarResumen,
+  generarClase,
   guardarRecurso,
   obtenerRecursosPorMateria,
   obtenerRecursoPorId,

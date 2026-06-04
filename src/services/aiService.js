@@ -5,9 +5,11 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Función existente: Resumen multi-fuente
+// ─────────────────────────────────────────────────────────────────────────────
 async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtra = '') {
   try {
-
     const fuentes = await prisma.fuenteContenido.findMany({
       where: {
         id: { in: fuenteIds },
@@ -49,17 +51,11 @@ Analiza el texto y genera múltiples objetos dentro del array 'secciones'. Cada 
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      response_format: { type: "json_object" },
+      model: 'gpt-4o-mini',
+      response_format: { type: 'json_object' },
       messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: `Por favor, resume el siguiente contenido de mis apuntes:\n\n${textoCombinado}`
-        }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Por favor, resume el siguiente contenido de mis apuntes:\n\n${textoCombinado}` }
       ]
     });
 
@@ -67,11 +63,81 @@ Analiza el texto y genera múltiples objetos dentro del array 'secciones'. Cada 
     const objetoResumen = JSON.parse(textoResumen);
 
     return objetoResumen;
-
   } catch (error) {
-    console.error("Error en el servicio de IA:", error);
+    console.error('Error en el servicio de IA (resumen):', error);
     throw error;
   }
 }
 
-module.exports = { generarResumenMultifuente }; 
+// ─────────────────────────────────────────────────────────────────────────────
+// Nueva función: Generación de Clase en 3 pasos
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Genera una "Clase" estructurada en 3 pasos a partir de un texto base.
+ * @param {string} textoBase          - Texto extraído del material fuente.
+ * @param {string} instruccionesExtra - Instrucciones opcionales del docente.
+ * @returns {Promise<Object>} Objeto JSON con la estructura de 3 pasos.
+ */
+async function generarClase(textoBase, instruccionesExtra = '') {
+  const systemPrompt = `Eres un diseñador instruccional experto en pedagogía activa. Tu tarea es analizar el texto proporcionado y crear una clase completa estructurada en exactamente 3 pasos.
+
+Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura exacta, sin texto adicional:
+{
+  "titulo_clase": "string — título descriptivo y atractivo para la clase",
+  "paso_1_debate": {
+    "pregunta_disparadora": "string — una pregunta abierta, provocadora y reflexiva para iniciar la clase",
+    "contexto_debate": "string — 2-3 oraciones explicando el propósito de la pregunta y qué se espera del debate"
+  },
+  "paso_2_contenido": [
+    { "subtitulo": "string", "parrafo": "string — desarrollo profundo del subtema, mínimo 3 oraciones" }
+  ],
+  "paso_3_evaluacion": [
+    "string — pregunta de evaluación conceptual o aplicada"
+  ]
+}
+
+Reglas estrictas:
+- paso_2_contenido debe tener entre 3 y 6 objetos con subtítulo y párrafo.
+- paso_3_evaluacion debe tener entre 3 y 5 preguntas variadas (conceptuales, aplicadas, de análisis).
+- Responde SOLO con el JSON, sin bloques de código ni explicaciones.`;
+
+  let userMessage = `Analiza el siguiente texto y genera la clase estructurada:\n\n${textoBase}`;
+  if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
+    userMessage += `\n\nInstrucciones adicionales del docente: ${instruccionesExtra}`;
+  }
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage }
+    ]
+  });
+
+  const rawContent = completion.choices[0].message.content;
+
+  // Parseo con validación explícita
+  let resultado;
+  try {
+    resultado = JSON.parse(rawContent);
+  } catch (parseError) {
+    console.error('generarClase: La IA devolvió JSON inválido:', rawContent);
+    throw new Error('La IA devolvió una respuesta con formato inválido. Intenta de nuevo.');
+  }
+
+  // Validación mínima de campos obligatorios
+  if (
+    !resultado.titulo_clase ||
+    !resultado.paso_1_debate ||
+    !Array.isArray(resultado.paso_2_contenido) ||
+    !Array.isArray(resultado.paso_3_evaluacion)
+  ) {
+    console.error('generarClase: JSON incompleto recibido de la IA:', resultado);
+    throw new Error('La respuesta de la IA no contiene todos los campos requeridos. Intenta de nuevo.');
+  }
+
+  return resultado;
+}
+
+module.exports = { generarResumenMultifuente, generarClase };

@@ -39,6 +39,7 @@ router.delete('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.elim
 
 // Rutas AI 
 router.post('/:id/generar-resumen', aiGenerationLimiter, recursoController.generarResumen);
+router.post('/:id/generar-clase',   aiGenerationLimiter, recursoController.generarClase);
 
 // Rutas Libro Temas
 router.get('/:id/libro-temas', libroTemasController.getLibroTemasDeMateria);
