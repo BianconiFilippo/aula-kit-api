@@ -140,4 +140,90 @@ Reglas estrictas:
   return resultado;
 }
 
-module.exports = { generarResumenMultifuente, generarClase };
+// ─────────────────────────────────────────────────────────────────────────────
+// Nueva función: Generación de Presentación estructurada
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Genera una "Presentación" estructurada a partir de un texto base.
+ * @param {string} textoBase          - Texto extraído del material fuente.
+ * @param {string} instruccionesExtra - Instrucciones opcionales del docente.
+ * @returns {Promise<Object>} Objeto JSON con la estructura de la presentación.
+ */
+async function generarPresentacion(textoBase, instruccionesExtra = '') {
+  const systemPrompt = `Eres un diseñador de diapositivas experto en síntesis visual y pedagogía. Tu tarea es analizar el texto proporcionado y crear una presentación estructurada.
+  
+Reglas estrictas para el contenido:
+1. NUNCA generes bloques de texto largos. Cada viñeta/item del contenido_texto debe ser extremadamente conciso (máximo 2 líneas por elemento).
+2. Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura exacta:
+{
+  "titulo_presentacion": "string",
+  "diapositivas": [
+    {
+      "tipo_layout": "titulo_principal | texto_y_viñetas | texto_e_imagen",
+      "titulo_slide": "string",
+      "contenido_texto": ["string", "string", "string"],
+      "notas_orador": "string",
+      "imagen_keyword": "string"
+    }
+  ]
+}
+
+Explicación de campos:
+- tipo_layout: Debe ser exactamente uno de estos tres valores: "titulo_principal", "texto_y_viñetas" o "texto_e_imagen".
+- contenido_texto: Un array de strings cortos que servirán de viñetas (bullet points) en la diapositiva.
+- notas_orador: Un párrafo descriptivo y útil para que el orador o profesor lea y desarrolle mientras se muestra la diapositiva.
+- imagen_keyword: Una o dos palabras estrictamente en INGLÉS (ej. "technology", "french revolution", "biology", "classroom") que capturen visualmente la esencia de la diapositiva para buscar imágenes de stock (Unsplash).`;
+
+  let userMessage = `Analiza el siguiente texto y genera la presentación estructurada:\n\n${textoBase}`;
+  if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
+    userMessage += `\n\nInstrucciones adicionales del docente: ${instruccionesExtra}`;
+  }
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage }
+    ]
+  });
+
+  const rawContent = completion.choices[0].message.content;
+
+  // Parseo con validación
+  let resultado;
+  try {
+    resultado = JSON.parse(rawContent);
+  } catch (parseError) {
+    console.error('generarPresentacion: La IA devolvió JSON inválido:', rawContent);
+    throw new Error('La IA devolvió una respuesta con formato inválido para la presentación. Intenta de nuevo.');
+  }
+
+  // Validación de campos obligatorios
+  if (
+    !resultado.titulo_presentacion ||
+    !Array.isArray(resultado.diapositivas)
+  ) {
+    console.error('generarPresentacion: JSON incompleto recibido de la IA:', resultado);
+    throw new Error('La respuesta de la IA no contiene la estructura de presentación requerida. Intenta de nuevo.');
+  }
+
+  // Validar y sanear cada diapositiva
+  resultado.diapositivas = resultado.diapositivas.map(slide => {
+    let layout = slide.tipo_layout || 'texto_y_viñetas';
+    if (!['titulo_principal', 'texto_y_viñetas', 'texto_e_imagen'].includes(layout)) {
+      layout = 'texto_y_viñetas';
+    }
+    return {
+      tipo_layout: layout,
+      titulo_slide: slide.titulo_slide || 'Diapositiva sin título',
+      contenido_texto: Array.isArray(slide.contenido_texto) ? slide.contenido_texto : [],
+      notas_orador: slide.notas_orador || '',
+      imagen_keyword: slide.imagen_keyword || 'education'
+    };
+  });
+
+  return resultado;
+}
+
+module.exports = { generarResumenMultifuente, generarClase, generarPresentacion };
