@@ -5,9 +5,13 @@ const authRoutes = require('./authRoutes');
 const materiaRoutes = require('./materiaRoutes');
 const authenticate = require('../middlewares/auth.middleware');
 const imagenController = require('../controllers/imagen.controller');
+const libroTemasNuevoRoutes = require('./libroTemasNuevoRoutes');
+const iaRoutes = require('./iaRoutes');
 
 router.use('/auth', authRoutes);
 router.use('/materias', authenticate, materiaRoutes);
+router.use('/', libroTemasNuevoRoutes);
+router.use('/ia', iaRoutes);
 router.get('/imagenes/buscar', authenticate, imagenController.buscarImagen);
 
 

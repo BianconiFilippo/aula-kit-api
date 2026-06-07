@@ -42,21 +42,27 @@ async function generarLibroTemasIA(materiaId, estructuraRequerida, instrucciones
       
       Tu tarea es desarrollar el contenido ESPECÍFICO para las clases.
 
-      ESTRUCTURA ESTRICTA REQUERIDA:
-      ${JSON.stringify(estructuraRequerida)}
+      Instrucción Crítica de Conteo:
+      Tu tarea es generar EXACTAMENTE ${cantidadClasesA_Generar} clases para esta unidad/tema. Es absolutamente obligatorio que el array JSON de respuesta tenga una longitud exacta de ${cantidadClasesA_Generar} elementos. Ni uno más, ni uno menos.
 
-      REGLAS ESTRICTAS:
-      1. Debes devolver EXACTAMENTE un objeto por cada "id_clase" provisto arriba. Ni uno más, ni uno menos.
-      2. Mantén la propiedad "id_clase" intacta en tu respuesta para que podamos mapearlo.
-      3. Devuelve todo en formato JSON bajo la propiedad "clases".
+      Reglas de ajuste de contenido:
+      - Si el contenido curricular te parece poco para llenar ${cantidadClasesA_Generar} clases, NO reduzcas la cantidad. En su lugar, divide los temas más complejos en "Parte 1" y "Parte 2", o agrega clases de "Repaso", "Integración" o "Evaluación Formativa".
+      - Si el contenido curricular te parece demasiado, agrupa conceptos afines en una misma clase, pero NUNCA excedas la cantidad solicitada.
 
-      FORMATO DE SALIDA DE CADA OBJETO (JSON):
+      Formato de Salida JSON Obligatorio:
+      Para garantizar que no pierdes la cuenta, cada clase en el array DEBE incluir un campo numérico secuencial llamado numero_clase, y el campo id_clase correspondiente al mapeo:
       {
-        "id_clase": X,
-        "unidad": "...",
-        "caracter": "Teórica",
-        "titulo": "...",
-        "actividades": "..."
+        "clases": [
+          {
+            "id_clase": X,
+            "numero_clase": 1,
+            "unidad": "...",
+            "caracter": "Teórica",
+            "titulo": "...",
+            "actividades": "..."
+          },
+          ... (continúa exactamente hasta llegar al objeto donde "numero_clase": ${cantidadClasesA_Generar})
+        ]
       }
     `;
 

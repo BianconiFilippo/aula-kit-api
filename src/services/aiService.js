@@ -264,4 +264,71 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
   return resultado;
 }
 
-module.exports = { generarResumenMultifuente, generarClase, generarPresentacion };
+// ─────────────────────────────────────────────────────────────────────────────
+// Sugerir Datos de Unidad (Objetivos y PdA)
+// ─────────────────────────────────────────────────────────────────────────────
+async function sugerirDatosUnidad(materia, nivelAnio, nombreUnidad) {
+  const systemPrompt = `Eres un experto en el Diseño Curricular y las Progresiones de Aprendizaje (PdA) de Argentina, enfocado en la provincia de Córdoba. Dado el nombre de una materia, el año/grado y el nombre de una unidad didáctica, debes deducir y sugerir: 1) Una lista de 3 objetivos de aprendizaje. 2) El 'Aprendizaje esperado' principal según la PdA oficial que mejor se adapte a ese tema.
+Debes responder estrictamente con un objeto JSON válido con la siguiente estructura exacta:
+{
+  "objetivos_sugeridos": ["string", "string", "string"],
+  "aprendizaje_pda_sugerido": "string"
+}`;
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    response_format: { type: 'json_object' },
+    temperature: 0.5,
+    max_tokens: 300,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Materia: ${materia}\nAño/Grado: ${nivelAnio}\nNombre de la unidad: ${nombreUnidad}` }
+    ]
+  });
+
+  const rawContent = completion.choices[0].message.content;
+  try {
+    return JSON.parse(rawContent);
+  } catch (parseError) {
+    console.error('sugerirDatosUnidad: La IA devolvió JSON inválido:', rawContent);
+    throw new Error('La IA devolvió una respuesta con formato inválido para la unidad.');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sugerir Datos de Tema (Indicador de Logro)
+// ─────────────────────────────────────────────────────────────────────────────
+async function sugerirDatosTema(materia, nivelAnio, nombreUnidad, pdaUnidad, nombreTema) {
+  const systemPrompt = `Eres un experto en el Diseño Curricular de Córdoba, Argentina. Teniendo en cuenta el contexto de una materia, una unidad, su Aprendizaje Esperado (PdA) y el nombre de un tema específico dentro de esa unidad, debes sugerir el 'Indicador de Logro' correspondiente a ese tema.
+Debes responder estrictamente con un objeto JSON válido con la siguiente estructura exacta:
+{
+  "indicador_logro_sugerido": "string"
+}`;
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    response_format: { type: 'json_object' },
+    temperature: 0.5,
+    max_tokens: 300,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: `Materia: ${materia}\nAño/Grado: ${nivelAnio}\nUnidad: ${nombreUnidad}\nPdA de la unidad: ${pdaUnidad}\nNombre del tema: ${nombreTema}` }
+    ]
+  });
+
+  const rawContent = completion.choices[0].message.content;
+  try {
+    return JSON.parse(rawContent);
+  } catch (parseError) {
+    console.error('sugerirDatosTema: La IA devolvió JSON inválido:', rawContent);
+    throw new Error('La IA devolvió una respuesta con formato inválido para el tema.');
+  }
+}
+
+module.exports = {
+  generarResumenMultifuente,
+  generarClase,
+  generarPresentacion,
+  sugerirDatosUnidad,
+  sugerirDatosTema
+};

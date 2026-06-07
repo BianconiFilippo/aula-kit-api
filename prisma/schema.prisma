@@ -37,6 +37,7 @@ model Materia {
   fuentes      FuenteContenido[]
   generaciones GeneracionRecurso[]
   libroTemas   RegistroLibroTema[]
+  unidades     Unidad[]
 }
 
 model Carpeta {
@@ -115,3 +116,78 @@ enum TipoRecurso {
   EVALUACION
   MAPA_CONCEPTUAL
 }
+
+enum TipoContenidoTema {
+  Conceptual
+  Procedimental
+  Actitudinal
+  Mixto
+}
+
+enum ModalidadClase {
+  Individual
+  Grupal
+  Plenario
+  Mixta
+}
+
+enum EstadoClaseNuevo {
+  Pendiente
+  Completada
+}
+
+model Unidad {
+  id               String   @id @default(uuid())
+  materiaId        String   @map("materia_id")
+  nombre           String
+  trimestre        Int
+  semanasEstimadas Int?     @map("semanas_estimadas")
+  objetivos        String?  @db.Text
+  aprendizajePda   String?  @map("aprendizaje_pda")
+  orden            Int
+  
+  materia          Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  temas            Tema[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("unidades")
+}
+
+model Tema {
+  id               String            @id @default(uuid())
+  unidadId         String            @map("unidad_id")
+  nombre           String
+  tipoContenido    TipoContenidoTema @map("tipo_contenido")
+  clasesEstimadas  Int?              @map("clases_estimadas")
+  indicadorLogro   String?           @map("indicador_logro")
+  formaEvaluacion  String?           @map("forma_evaluacion")
+  orden            Int
+
+  unidad           Unidad            @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+  clases           Clase[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("temas")
+}
+
+model Clase {
+  id            String           @id @default(uuid())
+  temaId        String           @map("tema_id")
+  titulo        String
+  fechaEstimada DateTime?        @map("fecha_estimada") @db.Date
+  modalidad     ModalidadClase
+  observaciones String?          @db.Text
+  estado        EstadoClaseNuevo @default(Pendiente)
+
+  tema          Tema             @relation(fields: [temaId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("clases")
+}
+
