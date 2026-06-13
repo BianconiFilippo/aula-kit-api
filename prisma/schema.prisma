@@ -115,6 +115,8 @@ enum TipoRecurso {
   GUIA_ESTUDIO
   EVALUACION
   MAPA_CONCEPTUAL
+  CLASE
+  PRESENTACION
 }
 
 enum TipoContenidoTema {
