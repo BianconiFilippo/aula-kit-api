@@ -336,10 +336,27 @@ Debes responder estrictamente con un objeto JSON válido con la siguiente estruc
   }
 }
 
+async function generarImagenDalle(prompt) {
+  try {
+    const response = await openai.images.generate({
+      model: 'dall-e-3',
+      prompt: prompt,
+      n: 1,
+      size: '1024x1024',
+      quality: 'standard'
+    });
+    return response.data[0].url;
+  } catch (error) {
+    console.error('generarImagenDalle: Error llamando a DALL-E 3 API:', error.message || error);
+    throw error;
+  }
+}
+
 module.exports = {
   generarResumenMultifuente,
   generarClase,
   generarPresentacion,
   sugerirDatosUnidad,
-  sugerirDatosTema
+  sugerirDatosTema,
+  generarImagenDalle
 };

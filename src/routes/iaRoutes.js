@@ -8,5 +8,6 @@ router.use(authenticate);
 
 router.post('/sugerir-unidad', iaController.sugerirUnidad);
 router.post('/sugerir-tema', iaController.sugerirTema);
+router.post('/generar-imagen-dalle', iaController.generarImagenDalle);
 
 module.exports = router;
