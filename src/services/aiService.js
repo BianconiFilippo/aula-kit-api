@@ -150,34 +150,34 @@ Reglas estrictas:
  * @returns {Promise<Object>} Objeto JSON con la estructura de la presentación.
  */
 async function generarPresentacion(textoBase, instruccionesExtra = '') {
-  const systemPrompt = `Eres un diseñador de diapositivas experto en síntesis visual, maquetación dinámica y pedagogía. Tu tarea es analizar el texto proporcionado y crear una presentación estructurada utilizando una arquitectura flexible de bloques y columnas.
+  const systemPrompt = `Actúa como un Director de Arte Editorial y experto en diseño instruccional. Tu tarea es analizar el texto proporcionado y estructurar una presentación minimalista, legible y visualmente premium.
+Deberás sugerir una paleta temática general y definir fondos dinámicos individuales por diapositiva.
 
-Reglas estrictas de estructuración:
-1. Determina para cada diapositiva si requiere un diseño de 1 columna (para portadas, títulos principales o secciones de transición) o de 2 columnas (para texto + imagen lateral, comparaciones, o explicaciones detalladas).
-2. Desglosa el contenido de cada columna en una secuencia ordenada de bloques. Los tipos de bloques permitidos son:
-   - "h1": Título de tamaño grande.
-   - "h2": Subtítulo o sección.
-   - "parrafo": Bloque de texto descriptivo (muy conciso, máximo 2 líneas).
-   - "lista": Un conjunto de viñetas (cada elemento de la lista debe ser corto, máximo 2 líneas).
-   - "imagen": Una palabra clave descriptiva en inglés para buscar imágenes de stock.
-3. No satures las diapositivas. Máximo 4 o 5 bloques por columna para mantener una buena respiración visual.
-4. Si el diseño (layout) es "2_columnas", el array de columnas debe contener exactamente dos objetos (orden 1 y orden 2).
-5. Si el bloque es de tipo "imagen", el campo "contenido" debe ser una única palabra clave en INGLÉS (ej. "microscope", "revolution", "server").
-6. Si el bloque es de tipo "lista", el campo "contenido" debe ser un Array de strings. Para los demás tipos de bloques, "contenido" debe ser un String.
+Reglas de Diseño y Contenido:
+1. No satures la presentación con imágenes. Solo utiliza el bloque tipo 'imagen' o fondos tipo 'imagen_ai' cuando visualmente aporten a la comprensión del tema (ej. diagramas conceptuales, anatomía, paisajes específicos). Si el concepto es abstracto, prefiere layouts de texto limpio con 1 o 2 columnas.
+2. Limita el uso de fondos tipo 'imagen_ai' principalmente a la diapositiva de Portada o a separadores de sección importantes para no afectar la legibilidad general.
+3. Cuando decidas usar una imagen (bloque 'imagen' o fondo 'imagen_ai'), el valor del campo correspondiente debe ser un Prompt descriptivo en inglés optimizado para un generador de IA como DALL-E 3 (ej. "A hyper-realistic close-up of a plant cell showing the nucleus, clean background").
+4. Si el layout es "2_columnas", el array de columnas debe contener exactamente dos objetos (orden 1 y orden 2).
+5. Si el bloque es de tipo "lista", el campo "contenido" debe ser un Array de strings. Para los demás tipos de bloques, "contenido" debe ser un String (o prompt en inglés si es imagen).
 
 Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura exacta:
 {
   "titulo_presentacion": "string — título global de la presentación",
+  "tema_sugerido": "minimalista | corporativo | creativo | oscuro",
   "diapositivas": [
     {
       "layout": "1_columna | 2_columnas",
+      "fondo": {
+        "tipo": "solido | gradiente | imagen_ai",
+        "valor": "string (hexadecimal, o prompt en inglés si es imagen_ai)"
+      },
       "columnas": [
         {
           "orden": 1,
           "bloques": [
             {
               "tipo": "h1 | h2 | parrafo | lista | imagen",
-              "contenido": "string o array de strings (según el tipo de bloque)"
+              "contenido": "texto, array de textos, o prompt en inglés si es imagen"
             }
           ]
         }
@@ -215,6 +215,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
   // Validación de campos obligatorios
   if (
     !resultado.titulo_presentacion ||
+    !resultado.tema_sugerido ||
     !Array.isArray(resultado.diapositivas)
   ) {
     console.error('generarPresentacion: JSON incompleto recibido de la IA:', resultado);
@@ -228,6 +229,14 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
       layout = '1_columna';
     }
     
+    let fondo = slide.fondo || { tipo: 'solido', valor: '#ffffff' };
+    if (!['solido', 'gradiente', 'imagen_ai'].includes(fondo.tipo)) {
+      fondo.tipo = 'solido';
+    }
+    if (!fondo.valor) {
+      fondo.valor = fondo.tipo === 'imagen_ai' ? 'abstract background' : '#ffffff';
+    }
+
     let cols = Array.isArray(slide.columnas) ? slide.columnas : [];
     
     if (layout === '2_columnas') {
@@ -256,6 +265,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
 
     return {
       layout: layout,
+      fondo: fondo,
       columnas: cols,
       notas_orador: slide.notas_orador || ''
     };
@@ -263,6 +273,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
 
   return resultado;
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Sugerir Datos de Unidad (Objetivos y PdA)
