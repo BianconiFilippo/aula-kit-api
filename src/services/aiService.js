@@ -339,15 +339,27 @@ Debes responder estrictamente con un objeto JSON válido con la siguiente estruc
 async function generarImagenDalle(prompt) {
   try {
     const response = await openai.images.generate({
-      model: 'dall-e-3',
+      model: 'gpt-image-1',
       prompt: prompt,
       n: 1,
       size: '1024x1024',
-      quality: 'standard'
+      quality: 'auto'
     });
-    return response.data[0].url;
+    
+    if (!response.data || response.data.length === 0) {
+      throw new Error('No image data returned from OpenAI API');
+    }
+    
+    const imgData = response.data[0];
+    if (imgData.url) {
+      return imgData.url;
+    } else if (imgData.b64_json) {
+      return `data:image/png;base64,${imgData.b64_json}`;
+    } else {
+      throw new Error('Image response does not contain url or b64_json');
+    }
   } catch (error) {
-    console.error('generarImagenDalle: Error llamando a DALL-E 3 API:', error.message || error);
+    console.error('generarImagenDalle: Error llamando a DALL-E 3 API (gpt-image-1):', error.message || error);
     throw error;
   }
 }
