@@ -7,9 +7,11 @@ const authenticate = require('../middlewares/auth.middleware');
 const imagenController = require('../controllers/imagen.controller');
 const libroTemasNuevoRoutes = require('./libroTemasNuevoRoutes');
 const iaRoutes = require('./iaRoutes');
+const calendarioRoutes = require('./calendarioRoutes');
 
 router.use('/auth', authRoutes);
 router.use('/materias', authenticate, materiaRoutes);
+router.use('/calendario', authenticate, calendarioRoutes);
 router.use('/', libroTemasNuevoRoutes);
 router.use('/ia', iaRoutes);
 router.get('/imagenes/buscar', authenticate, imagenController.buscarImagen);

@@ -5,7 +5,6 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/upload.middleware');
 const carpetaController = require('../controllers/carpeta.controller');
 const multer = require('multer');
-const libroTemasController = require('../controllers/libroTemas.controller');
 const libroTemasNuevoController = require('../controllers/libro-temas.controller');
 const recursoController = require('../controllers/recurso.controller');
 const { aiGenerationLimiter } = require('../middlewares/rateLimiter.middleware');
@@ -44,10 +43,9 @@ router.post('/:id/generar-clase',   aiGenerationLimiter, recursoController.gener
 router.post('/:id/generar-presentacion', aiGenerationLimiter, recursoController.generarPresentacion);
 
 // Rutas Libro Temas
-router.get('/:id/libro-temas', libroTemasNuevoController.obtenerArbolLibroTemas);
-router.post('/:id/libro-temas/generar', libroTemasController.generarLibroTemas);
-router.post('/:id/libro-temas/guardar', authMiddleware, libroTemasNuevoController.guardarLibroDefinitivo);
-router.put('/:id/libro-temas/:claseId', authMiddleware, libroTemasController.actualizarClase);
+router.get('/:id/libros', libroTemasNuevoController.obtenerLibrosPorMateria);
+router.post('/:id/libros', libroTemasNuevoController.crearLibroTema);
+router.post('/:id/libro-temas/generar', libroTemasNuevoController.generarLibroTemas);
 
 // Rutas de Recursos (Generados por IA)
 router.get('/:id/recursos', recursoController.obtenerRecursosPorMateria);

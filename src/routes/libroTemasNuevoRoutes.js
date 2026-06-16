@@ -6,6 +6,13 @@ const authenticate = require('../middlewares/auth.middleware');
 // Asegurar que estén autenticadas todas las llamadas
 router.use(authenticate);
 
+// --- Libros de Temas ---
+router.get('/libros-temas/:id/arbol', libroTemasController.obtenerArbolLibroTemas);
+router.post('/libros-temas/:id/guardar', libroTemasController.guardarLibroDefinitivo);
+router.post('/libros-temas/:id/duplicar', libroTemasController.duplicarLibroTema);
+router.delete('/libros-temas/:id', libroTemasController.eliminarLibroTema);
+router.post('/libros-temas/:id/modificar-fechas', libroTemasController.modificarFechasLibro);
+
 // --- Unidades ---
 router.post('/unidades', libroTemasController.crearUnidad);
 router.put('/unidades/:id', libroTemasController.actualizarUnidad);

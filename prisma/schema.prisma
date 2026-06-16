@@ -25,6 +25,7 @@ model Usuario {
   peticiones_ia_restantes Int       @default(3)
   fecha_ultimo_reinicio   DateTime?
   materias                Materia[]
+  recordatorios           Recordatorio[]
   createdAt               DateTime  @default(now())
 }
 
@@ -37,7 +38,8 @@ model Materia {
   fuentes      FuenteContenido[]
   generaciones GeneracionRecurso[]
   libroTemas   RegistroLibroTema[]
-  unidades     Unidad[]
+  librosTemas  LibroTema[]
+  recordatorios Recordatorio[]
 }
 
 model Carpeta {
@@ -120,58 +122,111 @@ enum TipoRecurso {
 }
 
 enum TipoContenidoTema {
-  Conceptual
-  Procedimental
-  Actitudinal
-  Mixto
+  conceptual
+  procedimental
+  actitudinal
+  mixto
 }
 
 enum ModalidadClase {
-  Individual
-  Grupal
-  Plenario
-  Mixta
+  individual
+  grupal
+  plenario
+  mixta
 }
 
 enum EstadoClaseNuevo {
-  Pendiente
-  Completada
+  planificada
+  dada
+  cancelada
+  postergada
+}
+
+enum Trimestre {
+  T1 @map("1")
+  T2 @map("2")
+  T3 @map("3")
+}
+
+enum ColorUnidad {
+  teal
+  blue
+  amber
+  coral
+  purple
+  pink
+  green
+}
+
+enum CapacidadMCC {
+  oralidad
+  pensamiento_critico
+  resolucion_problemas
+  trabajo_colaborativo
+  tecnologias
+  ed_ambiental
+}
+
+enum EvaluacionTema {
+  observacion
+  tp
+  escrita
+  oral
+  sin_evaluacion
+}
+
+model LibroTema {
+  id             String    @id @default(uuid())
+  materiaId      String    @map("materia_id")
+  cicloLectivo   Int       @map("ciclo_lectivo")
+  cursoDivision  String    @map("curso_division")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  materia        Materia   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  unidades       Unidad[]
+
+  @@map("libros_temas")
 }
 
 model Unidad {
-  id               String   @id @default(uuid())
-  materiaId        String   @map("materia_id")
+  id               String         @id @default(uuid())
+  libroTemaId      String         @map("libro_tema_id")
   nombre           String
-  trimestre        Int
-  semanasEstimadas Int?     @map("semanas_estimadas")
-  objetivos        String?  @db.Text
-  aprendizajePda   String?  @map("aprendizaje_pda")
+  trimestre        Trimestre
+  semanasEstimadas Int            @map("semanas_estimadas")
+  color            ColorUnidad
+  objetivos        String?        @db.Text
+  aprendizajePda   String?        @map("aprendizaje_pda") @db.Text
+  metaCicloPda     String?        @map("meta_ciclo_pda") @db.Text
+  capacidadesMcc   CapacidadMCC[] @map("capacidades_mcc")
   orden            Int
   
-  materia          Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  libroTema        LibroTema      @relation(fields: [libroTemaId], references: [id], onDelete: Cascade)
   temas            Tema[]
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@map("unidades")
 }
 
 model Tema {
-  id               String            @id @default(uuid())
-  unidadId         String            @map("unidad_id")
-  nombre           String
-  tipoContenido    TipoContenidoTema @map("tipo_contenido")
-  clasesEstimadas  Int?              @map("clases_estimadas")
-  indicadorLogro   String?           @map("indicador_logro")
-  formaEvaluacion  String?           @map("forma_evaluacion")
-  orden            Int
+  id              String            @id @default(uuid())
+  unidadId        String            @map("unidad_id")
+  nombre          String
+  tipoContenido   TipoContenidoTema @map("tipo_contenido")
+  clasesEstimadas Int               @map("clases_estimadas")
+  evaluacion      EvaluacionTema
+  indicadorLogro  String?           @map("indicador_logro") @db.Text
+  observaciones   String?           @db.Text
+  orden           Int
 
-  unidad           Unidad            @relation(fields: [unidadId], references: [id], onDelete: Cascade)
-  clases           Clase[]
+  unidad          Unidad            @relation(fields: [unidadId], references: [id], onDelete: Cascade)
+  clases          Clase[]
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   @@map("temas")
 }
@@ -182,14 +237,35 @@ model Clase {
   titulo        String
   fechaEstimada DateTime?        @map("fecha_estimada") @db.Date
   modalidad     ModalidadClase
-  observaciones String?          @db.Text
-  estado        EstadoClaseNuevo @default(Pendiente)
+  estado        EstadoClaseNuevo @default(planificada)
+  novedades     String?          @db.Text
+  orden         Int
 
   tema          Tema             @relation(fields: [temaId], references: [id], onDelete: Cascade)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   @@map("clases")
+}
+
+model Recordatorio {
+  id             String    @id @default(uuid())
+  titulo         String
+  contenido      String?   @db.Text
+  fecha          DateTime  @db.Date
+  color          String?   // e.g., 'blue', 'green', 'amber', 'purple', etc.
+  usuarioId      String    @map("usuario_id")
+  materiaId      String?   @map("materia_id")
+  
+  usuario        Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  materia        Materia?  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([usuarioId])
+  @@index([materiaId])
+  @@map("recordatorios")
 }
 
