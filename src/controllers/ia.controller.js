@@ -1,4 +1,5 @@
 const aiService = require('../services/aiService');
+const unsplashService = require('../services/unsplashService');
 
 const sugerirUnidad = async (req, res) => {
   try {
@@ -69,8 +70,15 @@ const generarImagenDalle = async (req, res) => {
     } catch (apiError) {
       console.error('Error al generar la imagen con DALL-E 3 (Safe fallback triggered):', apiError.message || apiError);
       
-      // Fallback: Retornar error: true y una imagen placeholder bonita de Unsplash
-      const fallbackUrl = `https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1024&auto=format&fit=crop`;
+      let fallbackUrl = `https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1024&auto=format&fit=crop`;
+      try {
+        const searchRes = await unsplashService.buscarImagen(prompt);
+        if (searchRes && searchRes.url) {
+          fallbackUrl = searchRes.url;
+        }
+      } catch (unsplashError) {
+        console.error('Error in fallback unsplash search:', unsplashError.message);
+      }
       
       return res.status(200).json({
         url: fallbackUrl,
