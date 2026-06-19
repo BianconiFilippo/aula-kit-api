@@ -30,6 +30,7 @@ router.post('/:id/fuentes', (req, res, next) => {
 }, materiaController.subirFuente);
 router.delete('/:id', authMiddleware, materiaController.eliminarMateria);
 router.delete('/:id/fuentes/:fuenteId', authMiddleware, materiaController.eliminarFuente);
+router.patch('/:id/fuentes/:fuenteId', authMiddleware, materiaController.actualizarFuente);
 router.get('/:id/fuentes', materiaController.getFuentesMateria);
 
 // Rutas de carpetas
@@ -50,6 +51,7 @@ router.post('/:id/libro-temas/generar', libroTemasNuevoController.generarLibroTe
 // Rutas de Recursos (Generados por IA)
 router.get('/:id/recursos', recursoController.obtenerRecursosPorMateria);
 router.post('/:id/recursos', recursoController.guardarRecurso);
+router.post('/:id/recursos/editar-ai', recursoController.editarRecursoAI);
 router.get('/:id/recursos/:recursoId', recursoController.obtenerRecursoPorId);
 router.put('/:id/recursos/:recursoId', recursoController.actualizarRecurso);
 

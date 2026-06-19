@@ -106,4 +106,27 @@ const getFuentesMateria = async (req, res) => {
   }
 }
 
-module.exports = { crearMateria, obtenerMaterias, obtenerMateria, subirFuente, eliminarMateria, eliminarFuente, getFuentesMateria };
+const actualizarFuente = async (req, res) => {
+  try {
+    const { fuenteId } = req.params;
+    const { nombreArchivo } = req.body;
+
+    if (!nombreArchivo) {
+      return res.status(400).json({ error: 'El nombre del archivo es obligatorio' });
+    }
+
+    const fuente = await prisma.fuenteContenido.update({
+      where: { id: fuenteId },
+      data: {
+        nombreArchivo
+      }
+    });
+
+    return res.status(200).json(fuente);
+  } catch (error) {
+    console.error('Error al actualizar la fuente:', error);
+    return res.status(500).json({ error: 'Error al actualizar el nombre del archivo', detalle: error.message });
+  }
+};
+
+module.exports = { crearMateria, obtenerMaterias, obtenerMateria, subirFuente, eliminarMateria, eliminarFuente, getFuentesMateria, actualizarFuente };

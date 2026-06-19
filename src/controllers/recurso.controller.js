@@ -1,5 +1,5 @@
 const prisma = require('../services/db');
-const { generarResumenMultifuente, generarClase: generarClaseIA, generarPresentacion: generarPresentacionIA } = require('../services/aiService');
+const { generarResumenMultifuente, generarClase: generarClaseIA, generarPresentacion: generarPresentacionIA, editarRecursoConIA } = require('../services/aiService');
 
 async function generarResumen(req, res) {
   try {
@@ -407,6 +407,23 @@ async function generarPresentacion(req, res) {
   }
 }
 
+async function editarRecursoAI(req, res) {
+  try {
+    const { tipo, instrucciones, contenido } = req.body;
+
+    if (!tipo || !instrucciones || !contenido) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios (tipo, instrucciones, contenido)' });
+    }
+
+    const contenidoModificado = await editarRecursoConIA(tipo, instrucciones, contenido);
+
+    return res.status(200).json({ datos: contenidoModificado });
+  } catch (error) {
+    console.error('Error al editar recurso con IA:', error);
+    return res.status(500).json({ error: 'Error al aplicar modificaciones con IA', detalle: error.message });
+  }
+}
+
 module.exports = {
   generarResumen,
   generarClase,
@@ -414,5 +431,6 @@ module.exports = {
   guardarRecurso,
   obtenerRecursosPorMateria,
   obtenerRecursoPorId,
-  actualizarRecurso
+  actualizarRecurso,
+  editarRecursoAI
 };

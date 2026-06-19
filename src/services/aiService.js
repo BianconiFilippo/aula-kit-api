@@ -364,11 +364,110 @@ async function generarImagenDalle(prompt) {
   }
 }
 
+async function editarRecursoConIA(tipo, instrucciones, contenidoActual) {
+  try {
+    const contenidoString = typeof contenidoActual === 'string' 
+      ? contenidoActual 
+      : JSON.stringify(contenidoActual);
+
+    let formatInstructions = '';
+    if (tipo === 'RESUMEN') {
+      formatInstructions = `El objeto JSON debe respetar la estructura de un Resumen:
+{
+  "titulo_principal": "string",
+  "secciones": [
+    {
+      "titulo": "string",
+      "contenido": "string"
+    }
+  ],
+  "conceptos_clave": ["string"],
+  "actividades_sugeridas": ["string"]
+}`;
+    } else if (tipo === 'CLASE') {
+      formatInstructions = `El objeto JSON debe respetar la estructura de una Clase:
+{
+  "titulo_clase": "string",
+  "paso_1_debate": {
+    "pregunta_disparadora": "string",
+    "contexto_debate": "string"
+  },
+  "paso_2_contenido": [
+    {
+      "subtitulo": "string",
+      "parrafo": "string"
+    }
+  ],
+  "paso_3_evaluacion": ["string"]
+}`;
+    } else if (tipo === 'PRESENTACION') {
+      formatInstructions = `El objeto JSON debe respetar la estructura de una Presentación:
+{
+  "titulo_presentacion": "string",
+  "diapositivas": [
+    {
+      "layout": "1_columna" | "2_columnas",
+      "fondo": {
+        "tipo": "solido" | "degradado" | "imagen_ai",
+        "valor": "string",
+        "url": "string"
+      },
+      "columnas": [
+        {
+          "orden": number,
+          "bloques": [
+            {
+              "tipo": "titulo" | "subtitulo" | "parrafo" | "imagen" | "lista",
+              "contenido": "string",
+              "url": "string"
+            }
+          ]
+        }
+      ],
+      "notas_orador": "string"
+    }
+  ]
+}`;
+    }
+
+    const systemPrompt = `Eres un asistente de IA experto en diseño pedagógico y edición de recursos.
+Tu tarea es modificar un recurso existente según las instrucciones específicas proporcionadas por el usuario.
+Debes analizar la estructura del recurso actual en formato JSON, aplicar las modificaciones solicitadas con precisión, y devolver el recurso actualizado en el mismo formato JSON exacto sin añadir ningún comentario fuera del JSON.
+
+Estructura requerida para el tipo ${tipo}:
+${formatInstructions}
+
+Reglas críticas:
+1. Retorna estrictamente el objeto JSON modificado. No agregues texto explicativo ni bloques de código formateados (ej: \`\`\`json ... \`\`\`).
+2. Mantén los datos existentes que no hayan sido afectados por las instrucciones del usuario.
+3. Asegúrate de que las modificaciones sigan criterios pedagógicos de alta calidad.
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Instrucciones de modificación: "${instrucciones}"\n\nRecurso actual (JSON):\n${contenidoString}` }
+      ]
+    });
+
+    const textoRespuesta = completion.choices[0].message.content;
+    const objetoRespuesta = JSON.parse(textoRespuesta);
+
+    return objetoRespuesta;
+  } catch (error) {
+    console.error('Error al editar recurso con IA:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   generarResumenMultifuente,
   generarClase,
   generarPresentacion,
   sugerirDatosUnidad,
   sugerirDatosTema,
-  generarImagenDalle
+  generarImagenDalle,
+  editarRecursoConIA
 };
