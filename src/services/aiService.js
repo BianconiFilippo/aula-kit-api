@@ -339,11 +339,11 @@ Debes responder estrictamente con un objeto JSON válido con la siguiente estruc
 async function generarImagenDalle(prompt) {
   try {
     const response = await openai.images.generate({
-      model: 'gpt-image-1',
+      model: 'dall-e-3',
       prompt: prompt,
       n: 1,
       size: '1024x1024',
-      quality: 'auto'
+      quality: 'standard'
     });
     
     if (!response.data || response.data.length === 0) {
