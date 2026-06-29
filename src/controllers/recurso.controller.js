@@ -4,16 +4,16 @@ const { generarResumenMultifuente, generarClase: generarClaseIA, generarPresenta
 async function generarResumen(req, res) {
   try {
     const materiaId = req.params.id;
-    const { fuenteIds, instruccionesExtra } = req.body;
+    const { fuenteIds, instruccionesExtra, textoBase } = req.body;
     const usuarioId = req.user?.id;
 
     if (!usuarioId) {
       return res.status(401).json({ error: 'Acceso denegado. Usuario no autenticado.' });
     }
 
-    if (!fuenteIds || !Array.isArray(fuenteIds) || fuenteIds.length === 0) {
+    if (!textoBase && (!fuenteIds || !Array.isArray(fuenteIds) || fuenteIds.length === 0)) {
       return res.status(400).json({ 
-        error: 'Debes seleccionar al menos un archivo para generar el resumen.' 
+        error: 'Debes seleccionar al menos un archivo o proporcionar un prompt/texto base.' 
       });
     }
 
@@ -70,7 +70,7 @@ async function generarResumen(req, res) {
     }
 
     // 3. Generación mediante OpenAI Service
-    const nuevoRecurso = await generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtra);
+    const nuevoRecurso = await generarResumenMultifuente(materiaId, fuenteIds || [], instruccionesExtra, textoBase);
 
     // 4. Descontar petición solo tras respuesta OpenAI exitosa
     if (dbUser.tier !== 'premium') {
@@ -178,32 +178,42 @@ async function actualizarRecurso(req, res) {
 async function generarClase(req, res) {
   try {
     const materiaId = req.params.id;
-    const { material_id, instrucciones_extra } = req.body;
+    const { material_id, instrucciones_extra, textoBase } = req.body;
     const usuarioId = req.user?.id;
 
     if (!usuarioId) {
       return res.status(401).json({ error: 'Acceso denegado. Usuario no autenticado.' });
     }
 
-    if (!material_id) {
-      return res.status(400).json({ error: 'Debes proporcionar el campo material_id.' });
-    }
+    let textoBaseFinal = '';
 
-    // 1. Verificar que el material existe y pertenece a la materia
-    const fuente = await prisma.fuenteContenido.findFirst({
-      where: { id: material_id, materiaId: materiaId }
-    });
+    if (material_id === 'from-scratch') {
+      if (!textoBase) {
+        return res.status(400).json({ error: 'Debes proporcionar el campo textoBase.' });
+      }
+      textoBaseFinal = textoBase;
+    } else {
+      if (!material_id) {
+        return res.status(400).json({ error: 'Debes proporcionar el campo material_id.' });
+      }
 
-    if (!fuente) {
-      return res.status(404).json({
-        error: 'Material base no encontrado o no pertenece a esta materia.'
+      // 1. Verificar que el material existe y pertenece a la materia
+      const fuente = await prisma.fuenteContenido.findFirst({
+        where: { id: material_id, materiaId: materiaId }
       });
-    }
 
-    if (!fuente.textoExtraido || fuente.textoExtraido.trim().length === 0) {
-      return res.status(400).json({
-        error: 'El material seleccionado no tiene texto extraído. Sube un archivo con contenido de texto.'
-      });
+      if (!fuente) {
+        return res.status(404).json({
+          error: 'Material base no encontrado o no pertenece a esta materia.'
+        });
+      }
+
+      if (!fuente.textoExtraido || fuente.textoExtraido.trim().length === 0) {
+        return res.status(400).json({
+          error: 'El material seleccionado no tiene texto extraído. Sube un archivo con contenido de texto.'
+        });
+      }
+      textoBaseFinal = fuente.textoExtraido;
     }
 
     // 2. Obtener datos del usuario y verificar créditos
@@ -256,14 +266,14 @@ async function generarClase(req, res) {
     }
 
     // 5. Truncar texto si es muy largo
-    let textoBase = fuente.textoExtraido;
-    if (textoBase.length > 30000) {
+    let textoBaseFinalTruncado = textoBaseFinal;
+    if (textoBaseFinalTruncado.length > 30000) {
       console.warn('generarClase: texto truncado por longitud excesiva.');
-      textoBase = textoBase.substring(0, 30000);
+      textoBaseFinalTruncado = textoBaseFinalTruncado.substring(0, 30000);
     }
 
     // 6. Llamada a la IA
-    const claseGenerada = await generarClaseIA(textoBase, instrucciones_extra || '');
+    const claseGenerada = await generarClaseIA(textoBaseFinalTruncado, instrucciones_extra || '');
 
     // 7. Descontar crédito solo tras respuesta exitosa
     if (dbUser.tier !== 'premium') {
@@ -294,32 +304,42 @@ async function generarClase(req, res) {
 async function generarPresentacion(req, res) {
   try {
     const materiaId = req.params.id;
-    const { material_id, instrucciones_extra } = req.body;
+    const { material_id, instrucciones_extra, textoBase } = req.body;
     const usuarioId = req.user?.id;
 
     if (!usuarioId) {
       return res.status(401).json({ error: 'Acceso denegado. Usuario no autenticado.' });
     }
 
-    if (!material_id) {
-      return res.status(400).json({ error: 'Debes proporcionar el campo material_id.' });
-    }
+    let textoBaseFinal = '';
 
-    // 1. Verificar que el material existe y pertenece a la materia
-    const fuente = await prisma.fuenteContenido.findFirst({
-      where: { id: material_id, materiaId: materiaId }
-    });
+    if (material_id === 'from-scratch') {
+      if (!textoBase) {
+        return res.status(400).json({ error: 'Debes proporcionar el campo textoBase.' });
+      }
+      textoBaseFinal = textoBase;
+    } else {
+      if (!material_id) {
+        return res.status(400).json({ error: 'Debes proporcionar el campo material_id.' });
+      }
 
-    if (!fuente) {
-      return res.status(404).json({
-        error: 'Material base no encontrado o no pertenece a esta materia.'
+      // 1. Verificar que el material existe y pertenece a la materia
+      const fuente = await prisma.fuenteContenido.findFirst({
+        where: { id: material_id, materiaId: materiaId }
       });
-    }
 
-    if (!fuente.textoExtraido || fuente.textoExtraido.trim().length === 0) {
-      return res.status(400).json({
-        error: 'El material seleccionado no tiene texto extraído. Sube un archivo con contenido de texto.'
-      });
+      if (!fuente) {
+        return res.status(404).json({
+          error: 'Material base no encontrado o no pertenece a esta materia.'
+        });
+      }
+
+      if (!fuente.textoExtraido || fuente.textoExtraido.trim().length === 0) {
+        return res.status(400).json({
+          error: 'El material seleccionado no tiene texto extraído. Sube un archivo con contenido de texto.'
+        });
+      }
+      textoBaseFinal = fuente.textoExtraido;
     }
 
     // 2. Obtener datos del usuario y verificar créditos
@@ -372,14 +392,14 @@ async function generarPresentacion(req, res) {
     }
 
     // 5. Truncar texto si es muy largo
-    let textoBase = fuente.textoExtraido;
-    if (textoBase.length > 30000) {
+    let textoBaseFinalTruncado = textoBaseFinal;
+    if (textoBaseFinalTruncado.length > 30000) {
       console.warn('generarPresentacion: texto truncado por longitud excesiva.');
-      textoBase = textoBase.substring(0, 30000);
+      textoBaseFinalTruncado = textoBaseFinalTruncado.substring(0, 30000);
     }
 
     // 6. Llamada a la IA
-    const presentacionGenerada = await generarPresentacionIA(textoBase, instrucciones_extra || '');
+    const presentacionGenerada = await generarPresentacionIA(textoBaseFinalTruncado, instrucciones_extra || '');
 
     // 7. Descontar crédito solo tras respuesta exitosa
     if (dbUser.tier !== 'premium') {

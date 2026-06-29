@@ -8,22 +8,28 @@ const openai = new OpenAI({
 // ─────────────────────────────────────────────────────────────────────────────
 // Función existente: Resumen multi-fuente
 // ─────────────────────────────────────────────────────────────────────────────
-async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtra = '') {
+async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtra = '', textoBase = null) {
   try {
-    const fuentes = await prisma.fuenteContenido.findMany({
-      where: {
-        id: { in: fuenteIds },
-        materiaId: materiaId
+    let textoCombinado = '';
+
+    if (textoBase) {
+      textoCombinado = textoBase;
+    } else {
+      const fuentes = await prisma.fuenteContenido.findMany({
+        where: {
+          id: { in: fuenteIds },
+          materiaId: materiaId
+        }
+      });
+
+      if (fuentes.length === 0) {
+        throw new Error('No se encontraron los archivos seleccionados o no tienen texto.');
       }
-    });
 
-    if (fuentes.length === 0) {
-      throw new Error('No se encontraron los archivos seleccionados o no tienen texto.');
+      textoCombinado = fuentes
+        .map(f => `--- Documento: ${f.nombreArchivo} ---\n${f.textoExtraido}`)
+        .join('\n\n');
     }
-
-    let textoCombinado = fuentes
-      .map(f => `--- Documento: ${f.nombreArchivo} ---\n${f.textoExtraido}`)
-      .join('\n\n');
 
     if (textoCombinado.length > 30000) {
       console.warn('El texto combinado es muy largo. Recortando para evitar errores...');
