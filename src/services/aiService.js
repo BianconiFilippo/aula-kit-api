@@ -36,21 +36,28 @@ async function generarResumenMultifuente(materiaId, fuenteIds, instruccionesExtr
       textoCombinado = textoCombinado.substring(0, 30000);
     }
 
-    let systemPrompt = `Actúa como un asistente pedagógico experto. Tu tarea es leer los textos proporcionados y generar un recurso pedagógico estructurado y profundo.
+    let systemPrompt = `Actúa como un "Editor de Libros de Texto Modernos". Tu tarea es leer los textos proporcionados y generar un resumen pedagógico estructurado y profundo.
+
+Regla de Jerarquía: Estructura el contenido utilizando secciones principales y, si el tema es complejo, utiliza subsecciones para dividir la información.
+
+Regla de Imágenes: Debes insertar bloques de tipo 'imagen_ai' solo donde visualmente aporten a la comprensión (ej. diagramas, conceptos clave, personajes históricos). No satures el documento. Cuando decidas usar una imagen, el contenido debe ser un Prompt descriptivo en inglés optimizado para DALL-E 3.
+
 Debes devolver estrictamente un objeto JSON con la siguiente estructura exacta:
 {
-  "titulo_principal": "string",
+  "titulo_resumen": "string",
   "secciones": [
     {
-      "titulo": "string",
-      "contenido": "string"
+      "titulo_seccion": "string",
+      "bloques": [
+        {
+          "tipo": "parrafo | subseccion | lista | imagen_ai",
+          "contenido": "string (texto, subtítulo, o prompt en inglés si es imagen_ai)",
+          "items": ["string"] // Opcional, solo usar si el tipo es 'lista'
+        }
+      ]
     }
-  ],
-  "conceptos_clave": ["string"],
-  "actividades_sugeridas": ["string"]
-}
-
-Analiza el texto y genera múltiples objetos dentro del array 'secciones'. Cada sección debe representar un apartado lógico del documento, con su respectivo título y un desarrollo profundo en contenido.`;
+  ]
+}`;
 
     if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
       systemPrompt += `\n\nATENCIÓN - Instrucciones específicas del usuario: ${instruccionesExtra}`;
