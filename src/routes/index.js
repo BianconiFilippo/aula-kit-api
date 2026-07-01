@@ -13,8 +13,12 @@ router.use('/auth', authRoutes);
 router.use('/materias', authenticate, materiaRoutes);
 router.use('/calendario', authenticate, calendarioRoutes);
 router.use('/', libroTemasNuevoRoutes);
+const exportarController = require('../controllers/exportar.controller');
+
 router.use('/ia', iaRoutes);
 router.get('/imagenes/buscar', authenticate, imagenController.buscarImagen);
+router.post('/exportar/resumen-pdf', authenticate, exportarController.exportarPdf);
+router.post('/exportar/pdf', authenticate, exportarController.exportarPdf);
 
 
 
