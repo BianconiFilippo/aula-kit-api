@@ -1,5 +1,8 @@
 const { OpenAI } = require('openai');
 const prisma = require('./db.js');
+const { randomUUID } = require('crypto');
+const axios = require('axios');
+const supabase = require('./supabase');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -350,14 +353,28 @@ Debes responder estrictamente con un objeto JSON válido con la siguiente estruc
 }
 
 async function generarImagenDalle(prompt) {
+  let imgUrl = null;
   try {
-    const response = await openai.images.generate({
-      model: 'dall-e-3',
-      prompt: prompt,
-      n: 1,
-      size: '1024x1024',
-      quality: 'standard'
-    });
+    let response;
+    // Intenta con dall-e-3 primero
+    try {
+      response = await openai.images.generate({
+        model: 'dall-e-3',
+        prompt: prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard'
+      });
+    } catch (dalle3Error) {
+      console.warn('Fallo DALL-E 3, intentando fallback con DALL-E 2:', dalle3Error.message);
+      // Fallback a dall-e-2
+      response = await openai.images.generate({
+        model: 'dall-e-2',
+        prompt: prompt,
+        n: 1,
+        size: '512x512'
+      });
+    }
     
     if (!response.data || response.data.length === 0) {
       throw new Error('No image data returned from OpenAI API');
@@ -365,14 +382,46 @@ async function generarImagenDalle(prompt) {
     
     const imgData = response.data[0];
     if (imgData.url) {
-      return imgData.url;
+      imgUrl = imgData.url;
     } else if (imgData.b64_json) {
-      return `data:image/png;base64,${imgData.b64_json}`;
+      imgUrl = `data:image/png;base64,${imgData.b64_json}`;
     } else {
       throw new Error('Image response does not contain url or b64_json');
     }
+
+    // Descarga la imagen y la sube a Supabase Storage
+    try {
+      let buffer;
+      if (imgUrl.startsWith('data:image')) {
+        const base64Data = imgUrl.split(';base64,').pop();
+        buffer = Buffer.from(base64Data, 'base64');
+      } else {
+        const axiosRes = await axios.get(imgUrl, { responseType: 'arraybuffer' });
+        buffer = Buffer.from(axiosRes.data);
+      }
+
+      const fileName = `${randomUUID()}.png`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('material_images')
+        .upload(fileName, buffer, { contentType: 'image/png', upsert: true });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('material_images')
+        .getPublicUrl(fileName);
+
+      console.log('Imagen subida con éxito a Supabase Storage:', publicUrl);
+      return publicUrl;
+    } catch (supabaseError) {
+      console.error('Error al subir la imagen a Supabase Storage (se usará URL temporal):', supabaseError.message || supabaseError);
+      return imgUrl; // Fallback a la URL temporal
+    }
   } catch (error) {
-    console.error('generarImagenDalle: Error llamando a DALL-E 3 API (gpt-image-1):', error.message || error);
+    console.error('generarImagenDalle: Error llamando a DALL-E API:', error.message || error);
     throw error;
   }
 }
@@ -385,7 +434,17 @@ async function editarRecursoConIA(tipo, instrucciones, contenidoActual) {
 
     let formatInstructions = '';
     if (tipo === 'RESUMEN') {
-      formatInstructions = `El objeto JSON debe respetar la estructura de un Resumen:
+      formatInstructions = `El objeto JSON debe mantener EXACTAMENTE las mismas claves principales que el objeto JSON del recurso actual.
+- Si el recurso actual tiene la clave "html_content", debes devolver "html_content" (como un único string conteniendo todo el texto formateado en HTML) y no debes incluir la clave "secciones". Edita el HTML de forma limpia y mantén el formato.
+- Si el recurso actual tiene la clave "secciones", debes devolver "secciones" (como un array de objetos con título y contenido) y no debes incluir la clave "html_content".
+Estructura en caso de usar html_content:
+{
+  "titulo_principal": "string",
+  "html_content": "string",
+  "conceptos_clave": ["string"],
+  "actividades_sugeridas": ["string"]
+}
+Estructura en caso de usar secciones:
 {
   "titulo_principal": "string",
   "secciones": [
