@@ -2,6 +2,9 @@
 # Usamos una imagen ligera de Node
 FROM node:20-slim AS builder
 
+# Deshabilitamos la descarga de navegadores de Puppeteer en npm install
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
 # Instalamos openssl (Requerido estrictamente por Prisma)
 RUN apt-get update -y && apt-get install -y openssl
 
@@ -12,7 +15,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Instalamos TODAS las dependencias
+# Instalamos TODAS las dependencias (sin descargar Chromium)
 RUN npm install
 
 # Generamos el cliente de Prisma (¡Paso crítico para que la BD funcione!)
@@ -25,8 +28,12 @@ COPY . .
 # Empezamos desde cero con una imagen limpia para que el servidor pese menos
 FROM node:20-slim AS runner
 
-# Volvemos a instalar openssl en la imagen final
-RUN apt-get update -y && apt-get install -y openssl
+# Instalamos openssl y chromium (que instala todas las dependencias nativas requeridas para correrlo)
+RUN apt-get update -y && apt-get install -y openssl chromium
+
+# Variables de entorno para Puppeteer
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /app
 
