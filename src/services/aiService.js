@@ -244,7 +244,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
     if (!['1_columna', '2_columnas'].includes(layout)) {
       layout = '1_columna';
     }
-    
+
     let fondo = slide.fondo || { tipo: 'solido', valor: '#ffffff' };
     if (!['solido', 'gradiente', 'imagen_ai'].includes(fondo.tipo)) {
       fondo.tipo = 'solido';
@@ -254,7 +254,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
     }
 
     let cols = Array.isArray(slide.columnas) ? slide.columnas : [];
-    
+
     if (layout === '2_columnas') {
       if (cols.length < 2) {
         cols = [
@@ -359,7 +359,7 @@ async function generarImagenDalle(prompt) {
     // Intenta con dall-e-3 primero
     try {
       response = await openai.images.generate({
-        model: 'dall-e-3',
+        model: 'gpt-image-1-mini',
         prompt: prompt,
         n: 1,
         size: '1024x1024',
@@ -369,17 +369,17 @@ async function generarImagenDalle(prompt) {
       console.warn('Fallo DALL-E 3, intentando fallback con DALL-E 2:', dalle3Error.message);
       // Fallback a dall-e-2
       response = await openai.images.generate({
-        model: 'dall-e-2',
+        model: 'gpt-image-1-mini',
         prompt: prompt,
         n: 1,
         size: '512x512'
       });
     }
-    
+
     if (!response.data || response.data.length === 0) {
       throw new Error('No image data returned from OpenAI API');
     }
-    
+
     const imgData = response.data[0];
     if (imgData.url) {
       imgUrl = imgData.url;
@@ -401,7 +401,7 @@ async function generarImagenDalle(prompt) {
       }
 
       const fileName = `${randomUUID()}.png`;
-      
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('material_images')
         .upload(fileName, buffer, { contentType: 'image/png', upsert: true });
@@ -428,8 +428,8 @@ async function generarImagenDalle(prompt) {
 
 async function editarRecursoConIA(tipo, instrucciones, contenidoActual) {
   try {
-    const contenidoString = typeof contenidoActual === 'string' 
-      ? contenidoActual 
+    const contenidoString = typeof contenidoActual === 'string'
+      ? contenidoActual
       : JSON.stringify(contenidoActual);
 
     let formatInstructions = '';
