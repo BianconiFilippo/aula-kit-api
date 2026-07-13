@@ -444,6 +444,29 @@ async function editarRecursoAI(req, res) {
   }
 }
 
+async function eliminarRecurso(req, res) {
+  try {
+    const { recursoId } = req.params;
+
+    const recurso = await prisma.generacionRecurso.findUnique({
+      where: { id: recursoId }
+    });
+
+    if (!recurso) {
+      return res.status(404).json({ error: 'Recurso no encontrado' });
+    }
+
+    await prisma.generacionRecurso.delete({
+      where: { id: recursoId }
+    });
+
+    return res.status(200).json({ mensaje: 'Recurso eliminado con éxito' });
+  } catch (error) {
+    console.error('Error al eliminar el recurso:', error);
+    return res.status(500).json({ error: 'Error interno al eliminar el recurso' });
+  }
+}
+
 module.exports = {
   generarResumen,
   generarClase,
@@ -452,5 +475,8 @@ module.exports = {
   obtenerRecursosPorMateria,
   obtenerRecursoPorId,
   actualizarRecurso,
-  editarRecursoAI
+  editarRecursoAI,
+  eliminarRecurso
 };
+
+

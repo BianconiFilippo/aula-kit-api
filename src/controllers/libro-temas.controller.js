@@ -100,6 +100,46 @@ const obtenerArbolLibroTemas = async (req, res) => {
   }
 };
 
+const obtenerArbolPorMateria = async (req, res) => {
+  try {
+    const { materia_id } = req.params;
+
+    const libroTema = await prisma.libroTema.findFirst({
+      where: { materiaId: materia_id },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!libroTema) {
+      return res.status(200).json({ success: true, data: [], message: 'No se encontró un libro de temas para esta materia.' });
+    }
+
+    const unidades = await prisma.unidad.findMany({
+      where: { libroTemaId: libroTema.id },
+      orderBy: { orden: 'asc' },
+      include: {
+        temas: {
+          orderBy: { orden: 'asc' },
+          include: {
+            clases: {
+              orderBy: [
+                { fechaEstimada: 'asc' },
+                { orden: 'asc' }
+              ]
+            }
+          }
+        }
+      }
+    });
+
+    const datosConFechas = calcularFechasJerarquia(unidades);
+
+    return res.status(200).json({ success: true, data: datosConFechas, libroTemaId: libroTema.id });
+  } catch (error) {
+    console.error('Error al obtener el árbol por materia:', error);
+    return res.status(500).json({ error: 'Error interno al cargar el libro de temas.' });
+  }
+};
+
 // --- CRUD UNIDADES ---
 
 // POST /api/unidades
@@ -937,6 +977,7 @@ module.exports = {
   modificarFechasLibro,
   generarLibroTemas,
   obtenerArbolLibroTemas,
+  obtenerArbolPorMateria,
   guardarLibroDefinitivo,
   obtenerLibrosPorMateria,
   crearLibroTema,

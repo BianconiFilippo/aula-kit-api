@@ -54,7 +54,6 @@ router.post('/:id/recursos', recursoController.guardarRecurso);
 router.post('/:id/recursos/editar-ai', recursoController.editarRecursoAI);
 router.get('/:id/recursos/:recursoId', recursoController.obtenerRecursoPorId);
 router.put('/:id/recursos/:recursoId', recursoController.actualizarRecurso);
-
+router.delete('/:id/recursos/:recursoId', recursoController.eliminarRecurso);
 
 module.exports = router;
-

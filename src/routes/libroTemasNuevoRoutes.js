@@ -8,6 +8,7 @@ router.use(authenticate);
 
 // --- Libros de Temas ---
 router.get('/libros-temas/:id/arbol', libroTemasController.obtenerArbolLibroTemas);
+router.get('/libro-temas/:materia_id/arbol', libroTemasController.obtenerArbolPorMateria);
 router.post('/libros-temas/:id/guardar', libroTemasController.guardarLibroDefinitivo);
 router.post('/libros-temas/:id/duplicar', libroTemasController.duplicarLibroTema);
 router.delete('/libros-temas/:id', libroTemasController.eliminarLibroTema);
