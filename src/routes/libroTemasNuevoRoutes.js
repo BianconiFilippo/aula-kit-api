@@ -13,6 +13,7 @@ router.post('/libros-temas/:id/guardar', libroTemasController.guardarLibroDefini
 router.post('/libros-temas/:id/duplicar', libroTemasController.duplicarLibroTema);
 router.delete('/libros-temas/:id', libroTemasController.eliminarLibroTema);
 router.post('/libros-temas/:id/modificar-fechas', libroTemasController.modificarFechasLibro);
+router.post('/libros-temas/:id/exportar-planificacion', libroTemasController.exportarPlanificacionWord);
 
 // --- Unidades ---
 router.post('/unidades', libroTemasController.crearUnidad);

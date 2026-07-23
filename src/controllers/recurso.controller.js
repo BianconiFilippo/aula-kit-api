@@ -417,7 +417,7 @@ async function generarPresentacion(req, res) {
     console.error('Error al generar la presentación:', error);
 
     // Error de validación de estructura JSON de la IA
-    if (error.message.includes('formato inválido') || error.message.includes('estructura de presentación')) {
+    if (error.message.includes('formato') || error.message.includes('esquema de Layouts') || error.message.includes('estructura')) {
       return res.status(502).json({ error: error.message });
     }
 

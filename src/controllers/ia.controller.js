@@ -92,8 +92,85 @@ const generarImagenDalle = async (req, res) => {
   }
 };
 
+const sugerirPda = async (req, res) => {
+  try {
+    const { materia, nivel_anio, nivelAnio, nombre_unidad, nombreUnidad } = req.body;
+    const resolvedMateria = materia;
+    const resolvedNivelAnio = nivelAnio || nivel_anio;
+    const resolvedNombreUnidad = nombreUnidad || nombre_unidad;
+
+    if (!resolvedMateria || !resolvedNivelAnio || !resolvedNombreUnidad) {
+      return res.status(400).json({ error: 'Faltan campos requeridos: materia, nivel_anio, nombre_unidad.' });
+    }
+
+    const sugerencia = await aiService.sugerirDatosUnidad(resolvedMateria, resolvedNivelAnio, resolvedNombreUnidad);
+    return res.status(200).json({ success: true, data: { aprendizaje_pda_sugerido: sugerencia.aprendizaje_pda_sugerido } });
+  } catch (error) {
+    console.error('Error en sugerirPda:', error);
+    return res.status(500).json({ error: error.message || 'Error al sugerir PDA.' });
+  }
+};
+
+const sugerirObjetivos = async (req, res) => {
+  try {
+    const { materia, nivel_anio, nivelAnio, nombre_unidad, nombreUnidad } = req.body;
+    const resolvedMateria = materia;
+    const resolvedNivelAnio = nivelAnio || nivel_anio;
+    const resolvedNombreUnidad = nombreUnidad || nombre_unidad;
+
+    if (!resolvedMateria || !resolvedNivelAnio || !resolvedNombreUnidad) {
+      return res.status(400).json({ error: 'Faltan campos requeridos: materia, nivel_anio, nombre_unidad.' });
+    }
+
+    const sugerencia = await aiService.sugerirDatosUnidad(resolvedMateria, resolvedNivelAnio, resolvedNombreUnidad);
+    return res.status(200).json({ success: true, data: { objetivos_sugeridos: sugerencia.objetivos_sugeridos } });
+  } catch (error) {
+    console.error('Error en sugerirObjetivos:', error);
+    return res.status(500).json({ error: error.message || 'Error al sugerir objetivos.' });
+  }
+};
+
+const sugerirIndicadorLogro = async (req, res) => {
+  try {
+    const {
+      materia,
+      nivel_anio, nivelAnio,
+      nombre_unidad, nombreUnidad,
+      pda_unidad, pdaUnidad,
+      nombre_tema, nombreTema
+    } = req.body;
+
+    const resolvedMateria = materia;
+    const resolvedNivelAnio = nivelAnio || nivel_anio;
+    const resolvedNombreUnidad = nombreUnidad || nombre_unidad;
+    const resolvedPdaUnidad = pdaUnidad || pda_unidad;
+    const resolvedNombreTema = nombreTema || nombre_tema;
+
+    if (!resolvedMateria || !resolvedNivelAnio || !resolvedNombreUnidad || !resolvedPdaUnidad || !resolvedNombreTema) {
+      return res.status(400).json({
+        error: 'Faltan campos requeridos: materia, nivel_anio, nombre_unidad, pda_unidad, nombre_tema.'
+      });
+    }
+
+    const sugerencia = await aiService.sugerirDatosTema(
+      resolvedMateria,
+      resolvedNivelAnio,
+      resolvedNombreUnidad,
+      resolvedPdaUnidad,
+      resolvedNombreTema
+    );
+    return res.status(200).json({ success: true, data: { indicador_logro_sugerido: sugerencia.indicador_logro_sugerido } });
+  } catch (error) {
+    console.error('Error en sugerirIndicadorLogro:', error);
+    return res.status(500).json({ error: error.message || 'Error al sugerir indicador de logro.' });
+  }
+};
+
 module.exports = {
   sugerirUnidad,
   sugerirTema,
-  generarImagenDalle
+  generarImagenDalle,
+  sugerirPda,
+  sugerirObjetivos,
+  sugerirIndicadorLogro
 };

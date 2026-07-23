@@ -1,6 +1,8 @@
 const prisma = require('../services/db.js');
 const libroTemasService = require('../services/libroService');
 const axios = require('axios');
+const aiService = require('../services/aiService');
+const { Document, Packer, Paragraph, TextRun, HeadingLevel } = require('docx');
 
 // --- Helper Functions to validate and map Enums ---
 const mapTrimestre = (val) => {
@@ -973,10 +975,170 @@ const modificarFechasLibro = async (req, res) => {
   }
 };
 
+const exportarPlanificacionWord = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const libroTema = await prisma.libroTema.findUnique({
+      where: { id },
+      include: {
+        materia: {
+          include: {
+            usuario: true
+          }
+        },
+        unidades: {
+          orderBy: { orden: 'asc' },
+          include: {
+            temas: {
+              orderBy: { orden: 'asc' },
+              include: {
+                clases: {
+                  orderBy: { orden: 'asc' }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!libroTema) {
+      return res.status(404).json({ error: 'Libro de temas no encontrado.' });
+    }
+
+    const { materia } = libroTema;
+    const docente = materia.usuario?.nombreCompleto || 'Docente de Aula Kit';
+    const institucion = 'Escuela Primaria de Córdoba';
+
+    const unidadesFormateadas = libroTema.unidades.map(u => ({
+      nombre: u.nombre,
+      trimestre: u.trimestre === 'T1' ? 1 : (u.trimestre === 'T2' ? 2 : 3),
+      semanas: u.semanasEstimadas || 4,
+      aprendizaje_pda: u.aprendizajePda || '',
+      capacidades_mcc: u.capacidadesMcc || [],
+      temas: (u.temas || []).map(t => ({
+        nombre: t.nombre,
+        tipo: t.tipoContenido,
+        clases: t.clasesEstimadas || 2,
+        evaluacion: t.evaluacion
+      }))
+    }));
+
+    const prompt = `Generá una planificación anual completa para entregar a directivos.
+Datos del docente:
+- Docente: ${docente}
+- Institución: ${institucion}
+- Materia: ${materia.nombre}
+- Nivel: Primaria
+- Grado: 4to grado
+- Provincia: Córdoba
+
+Unidades del año (en orden):
+${JSON.stringify(unidadesFormateadas, null, 2)}
+
+La planificación debe incluir en orden:
+1. Encabezado institucional
+2. Fundamentación de la materia para este nivel
+3. Marco curricular (usar las Progresiones de Aprendizaje de curriculumcordoba.ar como marco principal (NO los NAP). Buscar el documento de ${materia.nombre} y citar aprendizajes esperados por unidad y meta de ciclo.)
+4. Objetivos generales anuales (sintetizados de todas las unidades)
+5. Tabla de distribución de contenidos por trimestre
+6. Contenidos por unidad (conceptuales, procedimentales, actitudinales)
+7. Estrategias didácticas generales previstas (Incluir las capacidades fundamentales del MCC en este punto)
+8. Evaluación: criterios e instrumentos por trimestre
+9. Tabla de distribución de clases por trimestre
+10. Recursos y materiales generales
+11. Bibliografía docente y para alumnos
+
+Responde en formato Markdown estándar con los encabezados utilizando "#" y "##" y "###".`;
+
+    const planTexto = await aiService.generarPlanificacionAnual(prompt);
+
+    const docChildren = [];
+
+    docChildren.push(
+      new Paragraph({
+        text: `PLANIFICACIÓN ANUAL DE LA MATERIA: ${materia.nombre.toUpperCase()}`,
+        heading: HeadingLevel.HEADING_1,
+        spacing: { after: 200 }
+      })
+    );
+
+    const lines = planTexto.split('\n');
+
+    lines.forEach(line => {
+      const cleanLine = line.trim();
+      if (!cleanLine) {
+        return;
+      }
+
+      if (cleanLine.startsWith('# ')) {
+        docChildren.push(
+          new Paragraph({
+            text: cleanLine.substring(2),
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 200, after: 100 }
+          })
+        );
+      } else if (cleanLine.startsWith('## ')) {
+        docChildren.push(
+          new Paragraph({
+            text: cleanLine.substring(3),
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 150, after: 80 }
+          })
+        );
+      } else if (cleanLine.startsWith('### ')) {
+        docChildren.push(
+          new Paragraph({
+            text: cleanLine.substring(4),
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 120, after: 60 }
+          })
+        );
+      } else if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
+        docChildren.push(
+          new Paragraph({
+            text: cleanLine.substring(2),
+            bullet: { level: 0 },
+            spacing: { after: 80 }
+          })
+        );
+      } else {
+        docChildren.push(
+          new Paragraph({
+            children: [new TextRun(cleanLine)],
+            spacing: { after: 120 }
+          })
+        );
+      }
+    });
+
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: docChildren
+        }
+      ]
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename=Planificacion_Anual_${materia.nombre.replace(/\s+/g, '_')}.docx`);
+    return res.send(buffer);
+  } catch (error) {
+    console.error('Error al exportar planificación a Word:', error);
+    return res.status(500).json({ error: 'Error al generar el documento de planificación Word.' });
+  }
+};
+
 module.exports = {
   modificarFechasLibro,
   generarLibroTemas,
   obtenerArbolLibroTemas,
+  exportarPlanificacionWord,
   obtenerArbolPorMateria,
   guardarLibroDefinitivo,
   obtenerLibrosPorMateria,
