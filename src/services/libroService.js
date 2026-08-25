@@ -1,120 +1,145 @@
 const { OpenAI } = require('openai');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+const XLSX = require('xlsx');
 const prisma = require('./db.js');
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
- * Genera el contenido de las clases usando IA basado en una estructura estricta pre-calculada.
- * @param {string} materiaId - ID de la materia
- * @param {Array} estructuraRequerida - Array de objetos con { id_clase: X } enviado desde el front
- * @param {string} instruccionesExtra - Instrucciones adicionales del docente
+ * Extrae texto de un archivo cargado en memoria según su tipo (PDF, DOCX, XLSX, TXT)
+ */
+async function extraerTextoDeArchivo(fileBuffer, mimeType = '', originalName = '') {
+  if (!fileBuffer) return '';
+  const ext = originalName ? originalName.split('.').pop().toLowerCase() : '';
+
+  try {
+    if (mimeType.includes('pdf') || ext === 'pdf') {
+      const pdfData = await pdfParse(fileBuffer);
+      return pdfData.text || '';
+    }
+
+    if (mimeType.includes('word') || mimeType.includes('docx') || ext === 'docx' || ext === 'doc') {
+      const result = await mammoth.extractRawText({ buffer: fileBuffer });
+      return result.value || '';
+    }
+
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || ext === 'xlsx' || ext === 'xls') {
+      const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+      let text = '';
+      workbook.SheetNames.forEach(sheetName => {
+        const sheet = workbook.Sheets[sheetName];
+        text += XLSX.utils.sheet_to_txt(sheet) + '\n\n';
+      });
+      return text;
+    }
+
+    return fileBuffer.toString('utf-8');
+  } catch (err) {
+    console.error('Error al extraer texto del archivo:', err);
+    return fileBuffer.toString('utf-8');
+  }
+}
+
+/**
+ * Mapea la planificación anual sobre un esqueleto existente de clases (UUIDs pasados a la IA)
+ */
+async function completarEsqueletoConIA(materiaId, textoExtraido, esqueleto) {
+  const esqueletoFormatted = esqueleto.map(c => ({
+    id: c.id,
+    fecha: c.fecha ? new Date(c.fecha).toISOString().split('T')[0] : null,
+    numero_clase: c.numeroClase
+  }));
+
+  const systemPrompt = `Eres un experto en diseño curricular. A continuación recibirás el texto de una Planificación Anual y un JSON con un esqueleto de clases disponibles (fechas y números). Tu objetivo es distribuir lógicamente los contenidos de la planificación en estas clases. Debes devolver un JSON estricto: un array de objetos donde cada objeto contenga: id (el UUID exacto que te pasamos), unidad (nombre del bloque), caracteristica_clase (ej: Desarrollo, Repaso, Evaluación), tema_dia (el tema específico a dar) y actividades_propuestas (tareas sugeridas en base al documento).`;
+
+  let textToUse = textoExtraido ? textoExtraido.trim() : '';
+  if (textToUse.length > 30000) {
+    textToUse = textToUse.substring(0, 30000);
+  }
+
+  const userPrompt = `TEXTO DE LA PLANIFICACIÓN ANUAL:
+${textToUse}
+
+ESQUELETO DE CLASES DISPONIBLES (${esqueletoFormatted.length} clases):
+${JSON.stringify(esqueletoFormatted, null, 2)}
+
+Debes devolver obligatoriamente un JSON estricto con la propiedad "clases" conteniendo un array de ${esqueletoFormatted.length} objetos, asegurando mantener la propiedad "id" EXACTA que te pasamos para cada clase.`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ],
+    temperature: 0.3
+  });
+
+  const jsonContent = JSON.parse(response.choices[0].message.content || '{}');
+  const clasesGeneradas = jsonContent.clases || jsonContent.data || [];
+  return clasesGeneradas;
+}
+
+/**
+ * Genera el desglose de clases en formato plano usando IA (OpenAI GPT-4o-mini)
  */
 async function generarLibroTemasIA(
   materiaId,
-  estructuraRequerida,
-  instruccionesExtra = "",
-  frecuenciaSemanal = null,
-  volumenMaterial = null,
-  configFechas = null
+  textoPlanificacion = "",
+  fechasDisponibles = [],
+  instruccionesExtra = ""
 ) {
   try {
-    if (!estructuraRequerida || estructuraRequerida.length === 0) {
-      throw new Error("No se recibió la estructura estricta de clases a rellenar.");
+    let resolvedTexto = textoPlanificacion ? textoPlanificacion.trim() : "";
+
+    if (!resolvedTexto && materiaId) {
+      const fuentes = await prisma.fuenteContenido.findMany({ where: { materiaId: materiaId } });
+      resolvedTexto = fuentes.map(f => f.textoExtraido).filter(t => t).join('\n\n');
     }
 
-    const cantidadClasesA_Generar = estructuraRequerida.length;
-
-    const fuentes = await prisma.fuenteContenido.findMany({ where: { materiaId: materiaId } });
-    let textoCombinado = fuentes.map(f => f.textoExtraido).filter(t => t).join('\n\n');
-
-    if (textoCombinado.length > 30000) textoCombinado = textoCombinado.substring(0, 30000);
-
-    // Calcular métricas estimadas si no se especifican
-    const totalPalabras = textoCombinado ? textoCombinado.split(/\s+/).filter(Boolean).length : 0;
-    const paginasEstimadas = Math.ceil(totalPalabras / 250) || 1;
-
-    const resolvedVolumen = volumenMaterial || `${paginasEstimadas} páginas (aprox. ${totalPalabras} palabras)`;
-
-    let resolvedFrecuencia = frecuenciaSemanal;
-    if (!resolvedFrecuencia && configFechas && configFechas.diasCursada) {
-      resolvedFrecuencia = configFechas.diasCursada.length;
-    }
-    if (!resolvedFrecuencia) {
-      resolvedFrecuencia = 2; // valor por defecto
+    if (!resolvedTexto) {
+      throw new Error("No se proporcionó texto de planificación anual ni existen fuentes cargadas para esta materia.");
     }
 
-    const promptSyllabus = `
-      Actúa como diseñador curricular y planificador de clases realista.
-      Basándote en la frecuencia semanal de la materia (${resolvedFrecuencia} clases por semana) y el volumen del material didáctico base (${resolvedVolumen}), 
-      tu tarea es estructurar una planificación pedagógicamente viable de exactamente ${cantidadClasesA_Generar} clases.
-      
-      REGLA DE ORO DE REALISMO TEMPORAL:
-      Eres un planificador realista. DEBES calcular el tiempo necesario considerando que un alumno promedio puede procesar conceptos complejos a un ritmo de 2 a 3 páginas (o 500-750 palabras) por clase, sumado al tiempo de debate, explicación y actividades prácticas.
-      Si el material base es extenso, NO puedes agrupar gran cantidad de páginas o conceptos complejos en solo 1 o 2 clases.
-      Debes desglosar y secuenciar los temas en múltiples clases consecutivas a lo largo de varias semanas para garantizar un aprendizaje real y asimilación efectiva.
-      Calcula la cantidad y duración de las clases de cada 'Tema' en función de esta regla.
-      
-      Extrae de la siguiente información un índice estructurado de temas y subtemas ordenados de forma lógica.
-      Sé muy conciso, no des explicaciones, solo devuelve el listado de temas.
-      
-      \n\nCONTENIDO:\n${textoCombinado}
-    `;
-
-    const respuestaSyllabus = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: promptSyllabus }],
-      max_tokens: 1500
-    });
-
-    const indiceOptimizado = respuestaSyllabus.choices[0].message.content;
-
-    let promptIA = `
-      Eres un planificador pedagógico experto y realista. Basándote en este ÍNDICE DE TEMAS:
-      \n\n${indiceOptimizado}\n\n
-      
-      Tu tarea es desarrollar el contenido ESPECÍFICO para las clases, respetando el ritmo de aprendizaje determinado por la frecuencia semanal (${resolvedFrecuencia} clases por semana) y el volumen del material base (${resolvedVolumen}).
-      
-      Instrucción Crítica de Conteo y Realismo:
-      Tu tarea es generar EXACTAMENTE ${cantidadClasesA_Generar} clases para esta unidad/tema. Es absolutamente obligatorio que el array JSON de respuesta tenga una longitud exacta de ${cantidadClasesA_Generar} elementos. Ni uno más, ni uno menos.
-
-      Reglas de ajuste de contenido y realismo temporal:
-      - DEBES calcular el tiempo necesario considerando que un alumno promedio puede procesar conceptos complejos a un ritmo de 2 a 3 páginas por clase, sumado al tiempo de debate y actividades.
-      - Si el material base es muy extenso, NO puedes agruparlo en 1 o 2 clases. Debes desglosarlo en múltiples clases a lo largo de varias semanas para garantizar el aprendizaje real.
-      - Si el contenido curricular te parece poco para llenar ${cantidadClasesA_Generar} clases, NO reduzcas la cantidad. En su lugar, divide los temas más complejos en "Parte 1", "Parte 2", etc., o agrega clases de "Repaso", "Integración" o "Evaluación Formativa".
-      - Si el contenido curricular te parece demasiado para ${cantidadClasesA_Generar} clases, prioriza los conceptos fundamentales y secuéncialos respetando el ritmo de procesamiento realista por clase.
-
-      Formato de Salida JSON Obligatorio:
-      Para garantizar que no pierdes la cuenta, cada clase en el array DEBE incluir un campo numérico secuencial llamado numero_clase, y el campo id_clase correspondiente al mapeo:
-      {
-        "clases": [
-          {
-            "id_clase": X,
-            "numero_clase": 1,
-            "unidad": "...",
-            "caracter": "Teórica",
-            "titulo": "...",
-            "actividades": "..."
-          },
-          ... (continúa exactamente hasta llegar al objeto donde "numero_clase": ${cantidadClasesA_Generar})
-        ]
-      }
-    `;
-
-    if (instruccionesExtra) {
-      promptIA += `\nInstrucciones del profesor: ${instruccionesExtra}`;
+    if (!fechasDisponibles || !Array.isArray(fechasDisponibles) || fechasDisponibles.length === 0) {
+      throw new Error("No se proporcionó un listado de fechas disponibles de clases.");
     }
 
-    const completion = await openai.chat.completions.create({
+    if (resolvedTexto.length > 30000) {
+      resolvedTexto = resolvedTexto.substring(0, 30000);
+    }
+
+    const systemPrompt = `Eres un experto en diseño instruccional y pedagogía. Recibirás el texto de una 'Planificación Anual' de un docente y un listado de fechas de clases disponibles para el ciclo lectivo. Tu tarea es distribuir los contenidos generales, metodologías y objetivos de la planificación en un cronograma clase por clase.
+Reglas:
+- Crea exactamente una fila (clase) por cada fecha proporcionada.
+- Agrupa las clases en bloques temáticos usando el campo 'unidad' como etiqueta descriptiva.
+- En 'tema_dia', sé específico sobre qué se verá ese día basado en los contenidos del documento.
+- En 'actividades_propuestas', sugiere tareas concretas.`;
+
+    const userPrompt = `TEXTO DE LA PLANIFICACIÓN ANUAL:
+${resolvedTexto}
+
+FECHAS DISPONIBLES (${fechasDisponibles.length} clases):
+${JSON.stringify(fechasDisponibles, null, 2)}
+${instruccionesExtra ? `\nINSTRUCCIONES ADICIONALES DEL DOCENTE:\n${instruccionesExtra}` : ''}
+
+Debes devolver obligatoriamente un objeto JSON con una única propiedad 'clases' que contenga exactamente un array de ${fechasDisponibles.length} objetos con la estructura especificada.`;
+
+    const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       response_format: { type: "json_object" },
       messages: [
-        { role: "system", content: "Devuelve SOLO JSON strictly formatted." },
-        { role: "user", content: promptIA }
-      ]
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.3
     });
 
-    const jsonRespuesta = JSON.parse(completion.choices[0].message.content);
+    const jsonContent = JSON.parse(response.choices[0].message.content || '{}');
+    const clasesGeneradas = jsonContent.clases || jsonContent.data || [];
 
-    return jsonRespuesta.clases || [];
+    return clasesGeneradas;
 
   } catch (error) {
     console.error("Error en generarLibroTemasIA:", error);
@@ -123,5 +148,7 @@ async function generarLibroTemasIA(
 }
 
 module.exports = {
+  extraerTextoDeArchivo,
+  completarEsqueletoConIA,
   generarLibroTemasIA
 };

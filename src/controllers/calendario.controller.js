@@ -9,72 +9,37 @@ const obtenerEventosCalendario = async (req, res) => {
     // 1. Obtener todas las clases asociadas a materias del usuario
     const clases = await prisma.clase.findMany({
       where: {
-        tema: {
-          unidad: {
-            libroTema: {
-              materia: {
-                usuarioId: usuarioId
-              }
-            }
-          }
+        materia: {
+          usuarioId: usuarioId
         }
       },
       include: {
-        tema: {
+        materia: {
           select: {
             id: true,
-            nombre: true,
-            tipoContenido: true,
-            unidad: {
-              select: {
-                id: true,
-                nombre: true,
-                color: true,
-                libroTema: {
-                  select: {
-                    id: true,
-                    cicloLectivo: true,
-                    cursoDivision: true,
-                    materia: {
-                      select: {
-                        id: true,
-                        nombre: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            nombre: true
           }
         }
       },
-      orderBy: {
-        fechaEstimada: 'asc'
-      }
+      orderBy: [
+        { fecha: 'asc' },
+        { numeroClase: 'asc' }
+      ]
     });
 
     // Formatear clases para que sean fáciles de consumir en el frontend
     const clasesFormateadas = clases.map(c => ({
       id: c.id,
-      titulo: c.titulo,
-      fecha: c.fechaEstimada,
-      modalidad: c.modalidad,
+      materiaId: c.materiaId,
+      materiaNombre: c.materia ? c.materia.nombre : null,
+      fecha: c.fecha,
+      numeroClase: c.numeroClase,
+      unidad: c.unidad,
+      caracteristicaClase: c.caracteristicaClase,
+      temaDia: c.temaDia,
+      actividadesPropuestas: c.actividadesPropuestas,
       estado: c.estado,
-      novedades: c.novedades,
-      orden: c.orden,
-      tipo: 'clase',
-      // Datos de jerarquía
-      temaId: c.tema.id,
-      temaNombre: c.tema.nombre,
-      tipoContenido: c.tema.tipoContenido,
-      unidadId: c.tema.unidad.id,
-      unidadNombre: c.tema.unidad.nombre,
-      color: c.tema.unidad.color,
-      libroTemaId: c.tema.unidad.libroTema.id,
-      cicloLectivo: c.tema.unidad.libroTema.cicloLectivo,
-      cursoDivision: c.tema.unidad.libroTema.cursoDivision,
-      materiaId: c.tema.unidad.libroTema.materia.id,
-      materiaNombre: c.tema.unidad.libroTema.materia.nombre
+      tipo: 'clase'
     }));
 
     // 2. Obtener todos los recordatorios del usuario

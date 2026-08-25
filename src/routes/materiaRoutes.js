@@ -47,6 +47,8 @@ router.post('/:id/generar-presentacion', aiGenerationLimiter, recursoController.
 router.get('/:id/libros', libroTemasNuevoController.obtenerLibrosPorMateria);
 router.post('/:id/libros', libroTemasNuevoController.crearLibroTema);
 router.post('/:id/libro-temas/generar', libroTemasNuevoController.generarLibroTemas);
+router.post('/:id/libro-temas/generar-esqueleto', libroTemasNuevoController.generarEsqueletoClases);
+router.post('/:id/libro-temas/completar-ia', upload.single('archivo'), libroTemasNuevoController.completarConIA);
 
 // Rutas de Recursos (Generados por IA)
 router.get('/:id/recursos', recursoController.obtenerRecursosPorMateria);

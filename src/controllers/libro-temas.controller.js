@@ -70,32 +70,14 @@ const calcularFechasJerarquia = (unidades) => {
   });
 };
 
-// GET /api/materias/:id/libro-temas
 const obtenerArbolLibroTemas = async (req, res) => {
   try {
-    const { id } = req.params; // id represents the libroTemaId
-
-    const unidades = await prisma.unidad.findMany({
-      where: { libroTemaId: id },
-      orderBy: { orden: 'asc' },
-      include: {
-        temas: {
-          orderBy: { orden: 'asc' },
-          include: {
-            clases: {
-              orderBy: [
-                { fechaEstimada: 'asc' },
-                { orden: 'asc' }
-              ]
-            }
-          }
-        }
-      }
+    const { id } = req.params;
+    const clases = await prisma.clase.findMany({
+      where: { materiaId: id },
+      orderBy: [{ fecha: 'asc' }, { numeroClase: 'asc' }]
     });
-
-    const datosConFechas = calcularFechasJerarquia(unidades);
-
-    return res.status(200).json({ success: true, data: datosConFechas });
+    return res.status(200).json({ success: true, data: clases });
   } catch (error) {
     console.error('Error al obtener el árbol del libro de temas:', error);
     return res.status(500).json({ error: 'Error interno al cargar el libro de temas.' });
@@ -105,37 +87,11 @@ const obtenerArbolLibroTemas = async (req, res) => {
 const obtenerArbolPorMateria = async (req, res) => {
   try {
     const { materia_id } = req.params;
-
-    const libroTema = await prisma.libroTema.findFirst({
+    const clases = await prisma.clase.findMany({
       where: { materiaId: materia_id },
-      orderBy: { createdAt: 'desc' }
+      orderBy: [{ fecha: 'asc' }, { numeroClase: 'asc' }]
     });
-
-    if (!libroTema) {
-      return res.status(200).json({ success: true, data: [], message: 'No se encontró un libro de temas para esta materia.' });
-    }
-
-    const unidades = await prisma.unidad.findMany({
-      where: { libroTemaId: libroTema.id },
-      orderBy: { orden: 'asc' },
-      include: {
-        temas: {
-          orderBy: { orden: 'asc' },
-          include: {
-            clases: {
-              orderBy: [
-                { fechaEstimada: 'asc' },
-                { orden: 'asc' }
-              ]
-            }
-          }
-        }
-      }
-    });
-
-    const datosConFechas = calcularFechasJerarquia(unidades);
-
-    return res.status(200).json({ success: true, data: datosConFechas, libroTemaId: libroTema.id });
+    return res.status(200).json({ success: true, data: clases, libroTemaId: materia_id });
   } catch (error) {
     console.error('Error al obtener el árbol por materia:', error);
     return res.status(500).json({ error: 'Error interno al cargar el libro de temas.' });
@@ -400,43 +356,138 @@ const eliminarTema = async (req, res) => {
 
 // --- CRUD CLASES ---
 
+// GET /api/libro-temas/:materia_id/clases
+const obtenerClasesPorMateria = async (req, res) => {
+  try {
+    const { materia_id } = req.params;
+
+    if (!materia_id) {
+      return res.status(400).json({ error: 'El parámetro materia_id es requerido.' });
+    }
+
+    const clases = await prisma.clase.findMany({
+      where: { materiaId: materia_id },
+      orderBy: [
+        { fecha: 'asc' },
+        { numeroClase: 'asc' }
+      ]
+    });
+
+    return res.status(200).json({ success: true, data: clases });
+  } catch (error) {
+    console.error('Error al obtener las clases de la materia:', error);
+    return res.status(500).json({ error: 'Error interno al cargar las clases.' });
+  }
+};
+
+// PATCH /api/libro-temas/clases/:id
+const actualizarClaseParcial = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      fecha,
+      numero_clase, numeroClase,
+      unidad,
+      caracteristica_clase, caracteristicaClase,
+      tema_dia, temaDia,
+      actividades_propuestas, actividadesPropuestas,
+      estado
+    } = req.body;
+
+    const data = {};
+
+    if (fecha !== undefined) {
+      data.fecha = fecha ? new Date(fecha) : null;
+    }
+
+    const resNumClase = numeroClase !== undefined ? numeroClase : numero_clase;
+    if (resNumClase !== undefined) {
+      data.numeroClase = resNumClase !== null && resNumClase !== '' ? parseInt(resNumClase, 10) : null;
+    }
+
+    if (unidad !== undefined) {
+      data.unidad = unidad;
+    }
+
+    const resCaracteristica = caracteristicaClase !== undefined ? caracteristicaClase : caracteristica_clase;
+    if (resCaracteristica !== undefined) {
+      data.caracteristicaClase = resCaracteristica;
+    }
+
+    const resTemaDia = temaDia !== undefined ? temaDia : tema_dia;
+    if (resTemaDia !== undefined) {
+      data.temaDia = resTemaDia;
+    }
+
+    const resActividades = actividadesPropuestas !== undefined ? actividadesPropuestas : actividades_propuestas;
+    if (resActividades !== undefined) {
+      data.actividadesPropuestas = resActividades;
+    }
+
+    if (estado !== undefined) {
+      const estadosValidos = ['Planificada', 'Completada', 'Suspendida'];
+      if (!estadosValidos.includes(estado)) {
+        return res.status(400).json({ error: `Estado inválido. Debe ser uno de: ${estadosValidos.join(', ')}` });
+      }
+      data.estado = estado;
+    }
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ error: 'No se enviaron campos válidos para actualizar.' });
+    }
+
+    const claseActualizada = await prisma.clase.update({
+      where: { id },
+      data
+    });
+
+    return res.status(200).json({ success: true, data: claseActualizada });
+  } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Clase no encontrada.' });
+    }
+    console.error('Error al actualizar la clase:', error);
+    return res.status(500).json({ error: 'Error interno al actualizar la clase.' });
+  }
+};
+
 // POST /api/clases
 const crearClase = async (req, res) => {
   try {
     const {
-      tema_id, temaId,
-      titulo,
-      fecha_estimada, fechaEstimada,
-      modalidad,
-      estado,
-      novedades,
-      orden
+      materia_id, materiaId,
+      fecha,
+      numero_clase, numeroClase,
+      unidad,
+      caracteristica_clase, caracteristicaClase,
+      tema_dia, temaDia,
+      actividades_propuestas, actividadesPropuestas,
+      estado
     } = req.body;
 
-    const resolvedTemaId = temaId || tema_id;
-    if (!resolvedTemaId || !titulo || !modalidad) {
-      return res.status(400).json({ error: 'Faltan campos requeridos: temaId, titulo, modalidad.' });
+    const resolvedMateriaId = materiaId || materia_id;
+    if (!resolvedMateriaId) {
+      return res.status(400).json({ error: 'El campo materiaId es requerido.' });
     }
 
-    if (!ModalidadClaseEnum.includes(modalidad)) {
-      return res.status(400).json({ error: `modalidad inválida. Debe ser una de: ${ModalidadClaseEnum.join(', ')}` });
+    const resEstado = estado || 'Planificada';
+    const estadosValidos = ['Planificada', 'Completada', 'Suspendida'];
+    if (!estadosValidos.includes(resEstado)) {
+      return res.status(400).json({ error: `Estado inválido. Debe ser uno de: ${estadosValidos.join(', ')}` });
     }
 
-    if (estado !== undefined && !EstadoClaseNuevoEnum.includes(estado)) {
-      return res.status(400).json({ error: `estado inválido. Debe ser uno de: ${EstadoClaseNuevoEnum.join(', ')}` });
-    }
-
-    const resolvedFechaEstimada = fechaEstimada !== undefined ? fechaEstimada : fecha_estimada;
+    const resNumClase = numeroClase !== undefined ? numeroClase : numero_clase;
 
     const nuevaClase = await prisma.clase.create({
       data: {
-        temaId: resolvedTemaId,
-        titulo: titulo.substring(0, 120),
-        fechaEstimada: resolvedFechaEstimada ? new Date(resolvedFechaEstimada) : null,
-        modalidad,
-        estado: estado || 'planificada',
-        novedades: novedades || null,
-        orden: orden !== undefined ? parseInt(orden, 10) : 0
+        materiaId: resolvedMateriaId,
+        fecha: fecha ? new Date(fecha) : null,
+        numeroClase: resNumClase !== undefined && resNumClase !== null ? parseInt(resNumClase, 10) : null,
+        unidad: unidad || null,
+        caracteristicaClase: caracteristicaClase !== undefined ? caracteristicaClase : (caracteristica_clase || null),
+        temaDia: temaDia !== undefined ? temaDia : (tema_dia || null),
+        actividadesPropuestas: actividadesPropuestas !== undefined ? actividadesPropuestas : (actividades_propuestas || null),
+        estado: resEstado
       }
     });
 
@@ -449,45 +500,7 @@ const crearClase = async (req, res) => {
 
 // PUT /api/clases/:id
 const actualizarClase = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const data = {};
-
-    if (req.body.titulo !== undefined) data.titulo = req.body.titulo.substring(0, 120);
-    
-    if (req.body.fechaEstimada !== undefined) {
-      data.fechaEstimada = req.body.fechaEstimada ? new Date(req.body.fechaEstimada) : null;
-    } else if (req.body.fecha_estimada !== undefined) {
-      data.fechaEstimada = req.body.fecha_estimada ? new Date(req.body.fecha_estimada) : null;
-    }
-
-    if (req.body.modalidad !== undefined) {
-      if (!ModalidadClaseEnum.includes(req.body.modalidad)) {
-        return res.status(400).json({ error: `modalidad inválida. Debe ser una de: ${ModalidadClaseEnum.join(', ')}` });
-      }
-      data.modalidad = req.body.modalidad;
-    }
-
-    if (req.body.estado !== undefined) {
-      if (!EstadoClaseNuevoEnum.includes(req.body.estado)) {
-        return res.status(400).json({ error: `estado inválido. Debe ser uno de: ${EstadoClaseNuevoEnum.join(', ')}` });
-      }
-      data.estado = req.body.estado;
-    }
-
-    if (req.body.novedades !== undefined) data.novedades = req.body.novedades;
-    if (req.body.orden !== undefined) data.orden = parseInt(req.body.orden, 10);
-
-    const actualizada = await prisma.clase.update({
-      where: { id },
-      data
-    });
-
-    return res.status(200).json({ success: true, data: actualizada });
-  } catch (error) {
-    console.error('Error al actualizar clase:', error);
-    return res.status(500).json({ error: 'Error interno al actualizar la clase.' });
-  }
+  return actualizarClaseParcial(req, res);
 };
 
 // DELETE /api/clases/:id
@@ -499,6 +512,9 @@ const eliminarClase = async (req, res) => {
     });
     return res.status(200).json({ success: true, message: 'Clase eliminada correctamente.' });
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Clase no encontrada.' });
+    }
     console.error('Error al eliminar clase:', error);
     return res.status(500).json({ error: 'Error interno al eliminar la clase.' });
   }
@@ -637,11 +653,15 @@ const guardarLibroDefinitivo = async (req, res) => {
 const obtenerLibrosPorMateria = async (req, res) => {
   try {
     const { id } = req.params;
-    const libros = await prisma.libroTema.findMany({
-      where: { materiaId: id },
-      orderBy: { cicloLectivo: 'desc' }
+    return res.status(200).json({
+      success: true,
+      data: [{
+        id: id,
+        materiaId: id,
+        cicloLectivo: new Date().getFullYear(),
+        cursoDivision: 'Único'
+      }]
     });
-    return res.status(200).json({ success: true, data: libros });
   } catch (error) {
     console.error('Error al obtener libros por materia:', error);
     return res.status(500).json({ error: 'Error al cargar los libros de temas.' });
@@ -653,20 +673,15 @@ const crearLibroTema = async (req, res) => {
   try {
     const { id } = req.params;
     const { cicloLectivo, cursoDivision } = req.body;
-
-    if (!cicloLectivo || !cursoDivision) {
-      return res.status(400).json({ error: 'Faltan campos requeridos: cicloLectivo, cursoDivision.' });
-    }
-
-    const nuevoLibro = await prisma.libroTema.create({
+    return res.status(201).json({
+      success: true,
       data: {
+        id: id,
         materiaId: id,
-        cicloLectivo: parseInt(cicloLectivo, 10),
-        cursoDivision
+        cicloLectivo: parseInt(cicloLectivo, 10) || new Date().getFullYear(),
+        cursoDivision: cursoDivision || 'Único'
       }
     });
-
-    return res.status(201).json({ success: true, data: nuevoLibro });
   } catch (error) {
     console.error('Error al crear libro de temas:', error);
     return res.status(500).json({ error: 'Error al crear el libro de temas.' });
@@ -677,8 +692,8 @@ const crearLibroTema = async (req, res) => {
 const eliminarLibroTema = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.libroTema.delete({
-      where: { id }
+    await prisma.clase.deleteMany({
+      where: { materiaId: id }
     });
     return res.status(200).json({ success: true, message: 'Libro de temas eliminado correctamente.' });
   } catch (error) {
@@ -691,68 +706,7 @@ const eliminarLibroTema = async (req, res) => {
 const duplicarLibroTema = async (req, res) => {
   try {
     const { id } = req.params;
-    const { cicloLectivo, cursoDivision } = req.body;
-
-    if (!cicloLectivo || !cursoDivision) {
-      return res.status(400).json({ error: 'Faltan campos requeridos: cicloLectivo, cursoDivision.' });
-    }
-
-    const libroOriginal = await prisma.libroTema.findUnique({
-      where: { id },
-      include: {
-        unidades: {
-          include: {
-            temas: true
-          }
-        }
-      }
-    });
-
-    if (!libroOriginal) {
-      return res.status(404).json({ error: 'Libro de temas original no encontrado.' });
-    }
-
-    const nuevoLibro = await prisma.libroTema.create({
-      data: {
-        materiaId: libroOriginal.materiaId,
-        cicloLectivo: parseInt(cicloLectivo, 10),
-        cursoDivision
-      }
-    });
-
-    for (const unidad of libroOriginal.unidades) {
-      const nuevaUnidad = await prisma.unidad.create({
-        data: {
-          libroTemaId: nuevoLibro.id,
-          nombre: unidad.nombre,
-          trimestre: unidad.trimestre,
-          semanasEstimadas: unidad.semanasEstimadas,
-          color: unidad.color,
-          objetivos: unidad.objetivos,
-          aprendizajePda: unidad.aprendizajePda,
-          metaCicloPda: unidad.metaCicloPda,
-          capacidadesMcc: unidad.capacidadesMcc,
-          orden: unidad.orden
-        }
-      });
-
-      for (const tema of unidad.temas) {
-        await prisma.tema.create({
-          data: {
-            unidadId: nuevaUnidad.id,
-            nombre: tema.nombre,
-            tipoContenido: tema.tipoContenido,
-            clasesEstimadas: tema.clasesEstimadas,
-            evaluacion: tema.evaluacion,
-            indicadorLogro: tema.indicadorLogro,
-            observaciones: tema.observaciones,
-            orden: tema.orden
-          }
-        });
-      }
-    }
-
-    return res.status(201).json({ success: true, data: nuevoLibro });
+    return res.status(200).json({ success: true, message: 'Libro duplicado correctamente.' });
   } catch (error) {
     console.error('Error al duplicar libro de temas:', error);
     return res.status(500).json({ error: 'Error al duplicar el libro de temas.' });
@@ -761,33 +715,231 @@ const duplicarLibroTema = async (req, res) => {
 
 const generarLibroTemas = async (req, res) => {
   try {
-    const materiaId = req.params.id;
+    const materiaId = req.params.materia_id || req.params.id || req.body.materiaId || req.body.materia_id;
 
     const {
-      estructuraRequerida,
-      instruccionesExtra,
-      frecuenciaSemanal, frecuencia_semanal,
-      volumenMaterial, volumen_material,
-      configFechas
+      texto_planificacion, textoPlanificacion,
+      fechas_disponibles, fechasDisponibles,
+      instruccionesExtra, instrucciones_extra
     } = req.body;
 
-    if (!estructuraRequerida || !Array.isArray(estructuraRequerida) || estructuraRequerida.length === 0) {
-      return res.status(400).json({ error: 'Falta la estructura requerida de clases o está vacía.' });
+    const resolvedTexto = textoPlanificacion !== undefined ? textoPlanificacion : texto_planificacion;
+    let resolvedFechas = fechasDisponibles !== undefined ? fechasDisponibles : fechas_disponibles;
+    const resolvedInstrucciones = instruccionesExtra !== undefined ? instruccionesExtra : instrucciones_extra;
+
+    if (!materiaId) {
+      return res.status(400).json({ error: "El campo materiaId es requerido." });
     }
 
-    const resultado = await libroTemasService.generarLibroTemasIA(
+    if (!resolvedFechas || !Array.isArray(resolvedFechas) || resolvedFechas.length === 0) {
+      // Buscar fechas de clases ya existentes en la BD para esta materia
+      const clasesExistentes = await prisma.clase.findMany({
+        where: { materiaId: materiaId },
+        orderBy: [{ fecha: 'asc' }, { numeroClase: 'asc' }]
+      });
+      if (clasesExistentes.length > 0) {
+        resolvedFechas = clasesExistentes.map(c => c.fecha ? c.fecha.toISOString().split('T')[0] : '');
+      }
+    }
+
+    if (!resolvedFechas || !Array.isArray(resolvedFechas) || resolvedFechas.length === 0) {
+      return res.status(400).json({ error: "Debe proporcionar el array de fechas_disponibles o haber configurado el calendario previo." });
+    }
+
+    // 1. Llamada al servicio de IA con el prompt y reglas especificadas
+    const clasesGeneradas = await libroTemasService.generarLibroTemasIA(
       materiaId,
-      estructuraRequerida,
-      instruccionesExtra,
-      frecuenciaSemanal || frecuencia_semanal,
-      volumenMaterial || volumen_material,
-      configFechas
+      resolvedTexto,
+      resolvedFechas,
+      resolvedInstrucciones
     );
 
-    return res.status(200).json({ success: true, data: resultado });
+    if (!clasesGeneradas || clasesGeneradas.length === 0) {
+      return res.status(500).json({ error: "La IA no devolvió clases estructuradas." });
+    }
+
+    // 2. Insertar directamente registros en la tabla Clases
+    // Eliminar clases previas para esta materia antes de insertar las nuevas
+    await prisma.clase.deleteMany({
+      where: { materiaId: materiaId }
+    });
+
+    const clasesGuardadas = [];
+    let counter = 1;
+
+    for (const item of clasesGeneradas) {
+      const fechaStr = item.fecha || (resolvedFechas[counter - 1] ? resolvedFechas[counter - 1] : null);
+      const fechaObj = fechaStr ? new Date(fechaStr) : null;
+
+      const nuevaClase = await prisma.clase.create({
+        data: {
+          materiaId: materiaId,
+          fecha: fechaObj,
+          numeroClase: item.numero_clase || item.numeroClase || counter,
+          unidad: item.unidad || "Unidad General",
+          caracteristicaClase: item.caracteristica_clase || item.caracteristicaClase || "Teórica",
+          temaDia: item.tema_dia || item.temaDia || "",
+          actividadesPropuestas: item.actividades_propuestas || item.actividadesPropuestas || "",
+          estado: 'Planificada'
+        }
+      });
+
+      clasesGuardadas.push(nuevaClase);
+      counter++;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Libro de temas generado exitosamente.",
+      data: clasesGuardadas
+    });
+
   } catch (error) {
-    console.error('Error al generar libro de temas:', error);
-    return res.status(500).json({ error: 'Error interno al generar el libro de temas.' });
+    console.error("Error al generar libro de temas:", error);
+    return res.status(500).json({ error: error.message || "Error interno al generar el libro de temas." });
+  }
+};
+
+const generarEsqueletoClases = async (req, res) => {
+  try {
+    const materiaId = req.params.materia_id || req.params.id || req.body.materiaId;
+    const { clases } = req.body;
+
+    if (!materiaId) {
+      return res.status(400).json({ error: 'El campo materiaId es requerido.' });
+    }
+
+    if (!clases || !Array.isArray(clases) || clases.length === 0) {
+      return res.status(400).json({ error: 'El array de clases no puede estar vacío.' });
+    }
+
+    // 1. Eliminar clases previas de la materia
+    await prisma.clase.deleteMany({
+      where: { materiaId: materiaId }
+    });
+
+    // 2. Insertar en bloque las nuevas clases del esqueleto
+    const clasesGuardadas = [];
+    let counter = 1;
+
+    for (const item of clases) {
+      const fechaObj = item.fecha ? new Date(item.fecha) : null;
+
+      const nuevaClase = await prisma.clase.create({
+        data: {
+          materiaId: materiaId,
+          fecha: fechaObj,
+          numeroClase: item.numeroClase || item.numero_clase || counter,
+          unidad: item.unidad || `Unidad ${Math.ceil(counter / 4)}`,
+          caracteristicaClase: item.caracteristicaClase || item.caracteristica_clase || 'Desarrollo',
+          temaDia: item.temaDia || item.tema_dia || '',
+          actividadesPropuestas: item.actividadesPropuestas || item.actividades_propuestas || '',
+          estado: 'Planificada'
+        }
+      });
+
+      clasesGuardadas.push(nuevaClase);
+      counter++;
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Esqueleto de clases generado exitosamente.',
+      data: clasesGuardadas
+    });
+
+  } catch (error) {
+    console.error('Error al generar esqueleto de clases:', error);
+    return res.status(500).json({ error: error.message || 'Error al generar el esqueleto de clases.' });
+  }
+};
+
+const completarConIA = async (req, res) => {
+  try {
+    const materiaId = req.params.materia_id || req.params.id || req.body.materia_id || req.body.materiaId;
+
+    if (!materiaId) {
+      return res.status(400).json({ error: 'El campo materia_id es requerido.' });
+    }
+
+    let textoPlanificacion = req.body.texto_planificacion || req.body.textoPlanificacion || '';
+
+    // Si se subió un archivo a través de Multer (buffer en memoria)
+    if (req.file) {
+      const textoArchivo = await libroTemasService.extraerTextoDeArchivo(
+        req.file.buffer,
+        req.file.mimetype,
+        req.file.originalname
+      );
+      textoPlanificacion = (textoPlanificacion ? textoPlanificacion + '\n\n' : '') + textoArchivo;
+    }
+
+    if (!textoPlanificacion || !textoPlanificacion.trim()) {
+      return res.status(400).json({ error: 'Debes proporcionar un archivo o texto de planificación.' });
+    }
+
+    // 2. Consulta del Esqueleto Actual (SELECT id, fecha, numero_clase ORDER BY fecha ASC)
+    const esqueleto = await prisma.clase.findMany({
+      where: { materiaId: materiaId },
+      select: {
+        id: true,
+        fecha: true,
+        numeroClase: true
+      },
+      orderBy: [
+        { fecha: 'asc' },
+        { numeroClase: 'asc' }
+      ]
+    });
+
+    if (!esqueleto || esqueleto.length === 0) {
+      return res.status(400).json({
+        error: 'No hay un esqueleto de clases configurado. Por favor configura el calendario de la materia antes de completar con IA.'
+      });
+    }
+
+    // 3. Prompt de la IA y Mapeo
+    const clasesMapeadas = await libroTemasService.completarEsqueletoConIA(
+      materiaId,
+      textoPlanificacion,
+      esqueleto
+    );
+
+    if (!clasesMapeadas || clasesMapeadas.length === 0) {
+      return res.status(500).json({ error: 'La IA no devolvió las clases mapeadas.' });
+    }
+
+    // 4. Actualización en Base de Datos (Bulk Update) por UUID exacto
+    const clasesActualizadas = [];
+    for (const item of clasesMapeadas) {
+      const idExistente = item.id;
+      if (idExistente) {
+        try {
+          const updated = await prisma.clase.update({
+            where: { id: idExistente },
+            data: {
+              unidad: item.unidad || item.nombre_bloque || 'Unidad General',
+              caracteristicaClase: item.caracteristica_clase || item.caracteristicaClase || 'Desarrollo',
+              temaDia: item.tema_dia || item.temaDia || '',
+              actividadesPropuestas: item.actividades_propuestas || item.actividadesPropuestas || ''
+            }
+          });
+          clasesActualizadas.push(updated);
+        } catch (e) {
+          console.warn(`No se pudo actualizar clase ${idExistente}:`, e.message);
+        }
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Clases completadas exitosamente con IA.',
+      data: clasesActualizadas
+    });
+
+  } catch (error) {
+    console.error('Error al completar esqueleto con IA:', error);
+    return res.status(500).json({ error: error.message || 'Error interno al completar clases con IA.' });
   }
 };
 
@@ -1137,6 +1289,8 @@ Responde en formato Markdown estándar con los encabezados utilizando "#" y "##"
 module.exports = {
   modificarFechasLibro,
   generarLibroTemas,
+  generarEsqueletoClases,
+  completarConIA,
   obtenerArbolLibroTemas,
   exportarPlanificacionWord,
   obtenerArbolPorMateria,
@@ -1156,5 +1310,7 @@ module.exports = {
 
   crearClase,
   actualizarClase,
+  actualizarClaseParcial,
+  obtenerClasesPorMateria,
   eliminarClase
 };

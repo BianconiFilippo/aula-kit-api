@@ -11,6 +11,14 @@ datasource db {
 }
 
 enum EstadoClase {
+  Planificada
+  Completada
+  Suspendida
+
+  @@map("estado_clase")
+}
+
+enum EstadoRegistro {
   PENDIENTE
   COMPLETADA
   CANCELADA
@@ -38,8 +46,8 @@ model Materia {
   fuentes      FuenteContenido[]
   generaciones GeneracionRecurso[]
   libroTemas   RegistroLibroTema[]
-  librosTemas  LibroTema[]
   recordatorios Recordatorio[]
+  clases       Clase[]
 }
 
 model Carpeta {
@@ -55,12 +63,12 @@ model Carpeta {
 }
 
 model RegistroLibroTema {
-  id            String      @id @default(uuid())
+  id            String         @id @default(uuid())
   orden         Int
   fecha         DateTime
   titulo        String
-  descripcion   String?     @db.Text
-  estado        EstadoClase @default(PENDIENTE)
+  descripcion   String?        @db.Text
+  estado        EstadoRegistro @default(PENDIENTE)
   unidad        String?
   caracter      String?
   dinamica      String?
@@ -175,76 +183,21 @@ enum EvaluacionTema {
   sin_evaluacion
 }
 
-model LibroTema {
-  id             String    @id @default(uuid())
-  materiaId      String    @map("materia_id")
-  cicloLectivo   Int       @map("ciclo_lectivo")
-  cursoDivision  String    @map("curso_division")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-
-  materia        Materia   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
-  unidades       Unidad[]
-
-  @@map("libros_temas")
-}
-
-model Unidad {
-  id               String         @id @default(uuid())
-  libroTemaId      String         @map("libro_tema_id")
-  nombre           String
-  trimestre        Trimestre
-  semanasEstimadas Int            @map("semanas_estimadas")
-  color            ColorUnidad
-  objetivos        String?        @db.Text
-  aprendizajePda   String?        @map("aprendizaje_pda") @db.Text
-  metaCicloPda     String?        @map("meta_ciclo_pda") @db.Text
-  capacidadesMcc   CapacidadMCC[] @map("capacidades_mcc")
-  orden            Int
-  
-  libroTema        LibroTema      @relation(fields: [libroTemaId], references: [id], onDelete: Cascade)
-  temas            Tema[]
-
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-
-  @@map("unidades")
-}
-
-model Tema {
-  id              String            @id @default(uuid())
-  unidadId        String            @map("unidad_id")
-  nombre          String
-  tipoContenido   TipoContenidoTema @map("tipo_contenido")
-  clasesEstimadas Int               @map("clases_estimadas")
-  evaluacion      EvaluacionTema
-  indicadorLogro  String?           @map("indicador_logro") @db.Text
-  observaciones   String?           @db.Text
-  orden           Int
-
-  unidad          Unidad            @relation(fields: [unidadId], references: [id], onDelete: Cascade)
-  clases          Clase[]
-
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  @@map("temas")
-}
-
 model Clase {
-  id            String           @id @default(uuid())
-  temaId        String           @map("tema_id")
-  titulo        String
-  fechaEstimada DateTime?        @map("fecha_estimada") @db.Date
-  modalidad     ModalidadClase
-  estado        EstadoClaseNuevo @default(planificada)
-  novedades     String?          @db.Text
-  orden         Int
+  id                   String      @id @default(uuid())
+  materiaId            String      @map("materia_id")
+  fecha                DateTime?   @db.Date
+  numeroClase          Int?        @map("numero_clase")
+  unidad               String?     @db.Text
+  caracteristicaClase  String?     @map("caracteristica_clase")
+  temaDia              String?     @map("tema_dia") @db.Text
+  actividadesPropuestas String?    @map("actividades_propuestas") @db.Text
+  estado               EstadoClase @default(Planificada)
 
-  tema          Tema             @relation(fields: [temaId], references: [id], onDelete: Cascade)
+  materia              Materia     @relation(fields: [materiaId], references: [id], onDelete: Cascade)
 
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
 
   @@map("clases")
 }
