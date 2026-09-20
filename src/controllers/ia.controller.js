@@ -4,7 +4,7 @@ const unsplashService = require('../services/unsplashService');
 const sugerirUnidad = async (req, res) => {
   try {
     const { materia, nivel_anio, nivelAnio, nombre_unidad, nombreUnidad } = req.body;
-    
+
     const resolvedMateria = materia;
     const resolvedNivelAnio = nivelAnio || nivel_anio;
     const resolvedNombreUnidad = nombreUnidad || nombre_unidad;
@@ -69,7 +69,7 @@ const generarImagenDalle = async (req, res) => {
       return res.status(200).json({ url });
     } catch (apiError) {
       console.error('Error al generar la imagen con DALL-E 3 (Safe fallback triggered):', apiError.message || apiError);
-      
+
       let fallbackUrl = `https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1024&auto=format&fit=crop`;
       try {
         const searchRes = await unsplashService.buscarImagen(prompt);
@@ -79,7 +79,7 @@ const generarImagenDalle = async (req, res) => {
       } catch (unsplashError) {
         console.error('Error in fallback unsplash search:', unsplashError.message);
       }
-      
+
       return res.status(200).json({
         url: fallbackUrl,
         error: true,
@@ -166,7 +166,18 @@ const sugerirIndicadorLogro = async (req, res) => {
   }
 };
 
+const obtenerProgresionesCordoba = async (req, res) => {
+  try {
+    const progresiones = require('../constants/progresiones_de_aprendizaje.json');
+    return res.status(200).json({ success: true, data: progresiones });
+  } catch (error) {
+    console.error('Error al obtener progresiones de aprendizaje:', error);
+    return res.status(500).json({ error: 'Error interno al cargar el diseño curricular de Córdoba.' });
+  }
+};
+
 module.exports = {
+  obtenerProgresionesCordoba,
   sugerirUnidad,
   sugerirTema,
   generarImagenDalle,

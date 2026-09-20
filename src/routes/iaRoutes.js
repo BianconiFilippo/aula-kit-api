@@ -3,9 +3,11 @@ const router = express.Router();
 const iaController = require('../controllers/ia.controller');
 const authenticate = require('../middlewares/auth.middleware');
 
-// Proteger todas las llamadas de IA
-router.use(authenticate);
+// Endpoint público para el diseño curricular
+router.get('/progresiones-cordoba', iaController.obtenerProgresionesCordoba);
 
+// Proteger todas las llamadas de generación con IA
+router.use(authenticate);
 router.post('/sugerir-unidad', iaController.sugerirUnidad);
 router.post('/sugerir-tema', iaController.sugerirTema);
 router.post('/sugerir-pda', iaController.sugerirPda);

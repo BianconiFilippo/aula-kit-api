@@ -1,9 +1,14 @@
 const { OpenAI } = require('openai');
+const { zodResponseFormat } = require('openai/helpers/zod');
 const prisma = require('./db.js');
 const { randomUUID } = require('crypto');
 const axios = require('axios');
 const supabase = require('./supabase');
 const { PresentacionSchema } = require('../dtos/presentacion.dto.js');
+const { ClaseBaseSchema, ClaseSchema } = require('../dtos/clase.dto.js');
+const { SecuenciaDidacticaBaseSchema, SecuenciaDidacticaSchema } = require('../dtos/secuencia.dto.js');
+const { obtenerMarcoNormativo } = require('../constants/marcosNormativos.js');
+const { validarSecuenciaDidactica } = require('../validators/secuenciaValidator.js');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -87,45 +92,35 @@ Debes devolver estrictamente un objeto JSON con la siguiente estructura exacta:
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Nueva función: Generación de Clase en 3 pasos
+// Generación de Clase Individual estructurada pedagógicamente
 // ─────────────────────────────────────────────────────────────────────────────
 /**
- * Genera una "Clase" estructurada en 3 pasos a partir de un texto base.
+ * Genera una "Clase Individual" estructurada pedagógicamente a partir de un texto base.
  * @param {string} textoBase          - Texto extraído del material fuente.
  * @param {string} instruccionesExtra - Instrucciones opcionales del docente.
- * @returns {Promise<Object>} Objeto JSON con la estructura de 3 pasos.
+ * @returns {Promise<Object>} Objeto JSON validado con el esquema pedagógico profundo.
  */
 async function generarClase(textoBase, instruccionesExtra = '') {
-  const systemPrompt = `Eres un diseñador instruccional experto en pedagogía activa. Tu tarea es analizar el texto proporcionado y crear una clase completa estructurada en exactamente 3 pasos.
+  const systemPrompt = `Actuás como especialista en didáctica y planificación del nivel secundario argentino. Tu tarea es producir una clase completa, profesional y directamente utilizable en el aula basándote en el tema que pide el usuario.
 
-Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura exacta, sin texto adicional:
-{
-  "titulo_clase": "string — título descriptivo y atractivo para la clase",
-  "paso_1_debate": {
-    "pregunta_disparadora": "string — una pregunta abierta, provocadora y reflexiva para iniciar la clase",
-    "contexto_debate": "string — 2-3 oraciones explicando el propósito de la pregunta y qué se espera del debate"
-  },
-  "paso_2_contenido": [
-    { "subtitulo": "string", "parrafo": "string — desarrollo profundo del subtema, mínimo 3 oraciones" }
-  ],
-  "paso_3_evaluacion": [
-    "string — pregunta de evaluación conceptual o aplicada"
-  ]
-}
+REGLAS ESTRICTAS:
+1. No resumas el pedido. Desarrolla la clase completa.
+2. No reemplaces actividades por descripciones genéricas como 'dialogar sobre el tema' o 'hacer una puesta en común'. Escribí las consignas concretas.
+3. Diferenciá claramente entre la información para el docente (nota_para_docente) y lo que el estudiante debe resolver (consigna_literal_alumno).
+4. Priorizá actividades que obliguen al estudiante a inferir, interpretar y argumentar (no solo buscar información literal).
+5. La clase debe ser extensa y detallada, lista para aplicarse sin que el docente deba completarla posteriormente.
 
-Reglas estrictas:
-- paso_2_contenido debe tener entre 3 y 6 objetos con subtítulo y párrafo.
-- paso_3_evaluacion debe tener entre 3 y 5 preguntas variadas (conceptuales, aplicadas, de análisis).
-- Responde SOLO con el JSON, sin bloques de código ni explicaciones.`;
+REGLA DE TIEMPOS OBLIGATORIA:
+- La suma de momentos.inicio.tiempo_minutos + momentos.desarrollo.tiempo_minutos + momentos.cierre.tiempo_minutos DEBE ser exactamente igual a duracion_minutos (por defecto 80 minutos o el tiempo indicado).`;
 
-  let userMessage = `Analiza el siguiente texto y genera la clase estructurada:\n\n${textoBase}`;
+  let userMessage = `Tema o contenido solicitado para la clase:\n\n${textoBase}`;
   if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
-    userMessage += `\n\nInstrucciones adicionales del docente: ${instruccionesExtra}`;
+    userMessage += `\n\nInstrucciones o contexto adicional del docente:\n${instruccionesExtra}`;
   }
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
-    response_format: { type: 'json_object' },
+    response_format: zodResponseFormat(ClaseBaseSchema, 'clase_individual'),
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userMessage }
@@ -134,27 +129,31 @@ Reglas estrictas:
 
   const rawContent = completion.choices[0].message.content;
 
-  // Parseo con validación explícita
-  let resultado;
+  let jsonParsed;
   try {
-    resultado = JSON.parse(rawContent);
+    jsonParsed = JSON.parse(rawContent);
   } catch (parseError) {
     console.error('generarClase: La IA devolvió JSON inválido:', rawContent);
     throw new Error('La IA devolvió una respuesta con formato inválido. Intenta de nuevo.');
   }
 
-  // Validación mínima de campos obligatorios
-  if (
-    !resultado.titulo_clase ||
-    !resultado.paso_1_debate ||
-    !Array.isArray(resultado.paso_2_contenido) ||
-    !Array.isArray(resultado.paso_3_evaluacion)
-  ) {
-    console.error('generarClase: JSON incompleto recibido de la IA:', resultado);
-    throw new Error('La respuesta de la IA no contiene todos los campos requeridos. Intenta de nuevo.');
+  // Asegurar consistencia de duracion_minutos con la suma de momentos
+  const sumaTiempos =
+    (jsonParsed?.momentos?.inicio?.tiempo_minutos || 0) +
+    (jsonParsed?.momentos?.desarrollo?.tiempo_minutos || 0) +
+    (jsonParsed?.momentos?.cierre?.tiempo_minutos || 0);
+
+  if (sumaTiempos > 0 && jsonParsed.duracion_minutos !== sumaTiempos) {
+    jsonParsed.duracion_minutos = sumaTiempos;
   }
 
-  return resultado;
+  const validation = ClaseSchema.safeParse(jsonParsed);
+  if (!validation.success) {
+    console.error('generarClase: Error de validación Zod:', JSON.stringify(validation.error.format(), null, 2));
+    throw new Error('La respuesta de la IA no cumple con el esquema pedagógico requerido. Intenta de nuevo.');
+  }
+
+  return validation.data;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -212,7 +211,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
   }
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5.1',
     response_format: { type: 'json_object' },
     messages: [
       { role: 'system', content: systemPrompt },
@@ -433,21 +432,33 @@ Estructura en caso de usar secciones:
   "actividades_sugeridas": ["string"]
 }`;
     } else if (tipo === 'CLASE') {
-      formatInstructions = `El objeto JSON debe respetar la estructura de una Clase:
+      formatInstructions = `El objeto JSON debe respetar la estructura pedagógica de una Clase:
 {
-  "titulo_clase": "string",
-  "paso_1_debate": {
-    "pregunta_disparadora": "string",
-    "contexto_debate": "string"
-  },
-  "paso_2_contenido": [
-    {
-      "subtitulo": "string",
-      "parrafo": "string"
+  "titulo": "string",
+  "duracion_minutos": "number (suma exacta de inicio, desarrollo y cierre)",
+  "objetivo_clase": "string",
+  "recursos_necesarios": ["string"],
+  "momentos": {
+    "inicio": {
+      "tiempo_minutos": "number",
+      "nota_para_docente": "string (Qué debe hacer/explicar el docente)",
+      "consigna_literal_alumno": "string (Las palabras exactas o preguntas a dictar al alumno)"
+    },
+    "desarrollo": {
+      "tiempo_minutos": "number",
+      "nota_para_docente": "string",
+      "consigna_literal_alumno": "string (Prohibido usar descripciones genéricas como 'hacer puesta en común')"
+    },
+    "cierre": {
+      "tiempo_minutos": "number",
+      "nota_para_docente": "string (Cómo evaluar formativamente el cierre)",
+      "consigna_literal_alumno": "string",
+      "registro_carpeta_tarea": "string"
     }
-  ],
-  "paso_3_evaluacion": ["string"]
-}`;
+  },
+  "evidencia_aprendizaje": "string"
+}
+Asegúrate de que la suma de tiempo_minutos de inicio, desarrollo y cierre sea estrictamente igual a duracion_minutos.`;
     } else if (tipo === 'PRESENTACION') {
       formatInstructions = `El objeto JSON debe respetar la estructura de una Presentación basada en Layouts:
 {
@@ -465,6 +476,39 @@ Estructura en caso de usar secciones:
       }
     }
   ]
+}`;
+    } else if (tipo === 'SECUENCIA' || tipo === 'SECUENCIA_DIDACTICA') {
+      formatInstructions = `El objeto JSON debe respetar la estructura pedagógica de una Secuencia Didáctica:
+{
+  "titulo": "string",
+  "espacio_curricular": "string",
+  "curso": "string",
+  "tema": "string",
+  "cantidad_clases": number,
+  "fundamentacion": "string",
+  "objetivos": ["string"],
+  "capacidades": ["string"],
+  "clases": [
+    {
+      "numero": number,
+      "titulo": "string",
+      "duracion_minutos": number,
+      "objetivo": "string",
+      "momentos": {
+        "inicio": { "tiempo_minutos": number, "nota_para_docente": "string", "consigna_literal_alumno": "string" },
+        "desarrollo": { "tiempo_minutos": number, "nota_para_docente": "string", "consigna_literal_alumno": "string" },
+        "cierre": { "tiempo_minutos": number, "nota_para_docente": "string", "consigna_literal_alumno": "string" }
+      }
+    }
+  ],
+  "evaluacion": {
+    "diagnostica": "string",
+    "formativa": "string",
+    "final": "string",
+    "rubricas": [
+      { "criterio": "string", "nivel_destacado": "string", "nivel_logrado": "string", "nivel_en_proceso": "string" }
+    ]
+  }
 }`;
     }
 
@@ -517,6 +561,162 @@ async function generarPlanificacionAnual(promptContent) {
   }
 }
 
+/**
+ * Genera una Secuencia Didáctica completa estructurada y tipada, adaptando dinámicamente el marco normativo provincial.
+ * @param {Object} params - Datos para la generación.
+ * @param {string} [params.provincia] - Provincia para resolver marco normativo.
+ * @param {string} [params.espacio_curricular] - Materia / Asignatura.
+ * @param {string} [params.curso] - Curso / Nivel.
+ * @param {string} [params.tema] - Tema central o eje de la secuencia.
+ * @param {number} [params.cantidad_clases=3] - Número de clases de la secuencia.
+ * @param {string} [params.enfoque_objetivo] - Enfoque pedagógico u objetivo específico.
+ * @param {string} [params.textoBase] - Texto base extraído de documentos o apuntes.
+ * @param {string} [params.instruccionesExtra] - Instrucciones o requerimientos adicionales.
+ * @returns {Promise<Object>} Objeto JSON validado con el esquema Zod de Secuencia Didáctica.
+ */
+async function generarSecuenciaDidactica(params = {}) {
+  const {
+    provincia,
+    espacio_curricular = '',
+    curso = '',
+    tema = '',
+    cantidad_clases = 3,
+    enfoque_objetivo = '',
+    textoBase = '',
+    instruccionesExtra = '',
+    meta_proposito = '',
+    aprendizajes_seleccionados = [],
+    indicadores_logro = []
+  } = params;
+
+  const marco_provincial = obtenerMarcoNormativo(provincia);
+
+  const systemPrompt = `Actuás como especialista en didáctica de Argentina. Basa esta secuencia OBLIGATORIAMENTE en el marco normativo: ${marco_provincial}. Crea una progresión de aprendizaje de MÚLTIPLES clases. NO asumas interpretaciones; escribe las consignas literales para los alumnos. Diferencia notas del docente de consignas de alumnos. Prohibido resumir.
+
+DIRECTIVAS CURRICULARES Y PEDAGÓGICAS:
+1. "fundamentacion": Explica con rigor la pertinencia didáctica y la progresión de saberes según el marco normativo ${marco_provincial}.
+2. "objetivos" y "capacidades": Formula metas de aprendizaje observables y capacidades prioritarias (resolución de problemas, pensamiento crítico, comunicación, trabajo en equipo).
+3. "clases": Desarrolla de manera exhaustiva un total de ${cantidad_clases} clases correlativas (mínimo 1 clase). Cada clase debe tener:
+   - "numero": Correlativo (1 a ${cantidad_clases}).
+   - "titulo": Título pedagógico y motivador.
+   - "duracion_minutos": Duración total en minutos.
+   - "objetivo": Objetivo específico de la clase.
+   - "momentos":
+     * "inicio": { tiempo_minutos, nota_para_docente, consigna_literal_alumno }
+     * "desarrollo": { tiempo_minutos, nota_para_docente, consigna_literal_alumno (obligatorio redactar consigna detallada de al menos 30 caracteres) }
+     * "cierre": { tiempo_minutos, nota_para_docente, consigna_literal_alumno }
+4. "evaluacion": Define estrategias claras para evaluación diagnóstica, formativa y final, además de una matriz analítica de rúbricas ("rubricas") con criterios y descriptores por nivel de desempeño.`;
+
+  let userPrompt = `Genera la Secuencia Didáctica completa con los siguientes parámetros:
+- Espacio Curricular / Materia: ${espacio_curricular || 'No especificado'}
+- Curso / Año: ${curso || 'Nivel Secundario'}
+- Tema / Contexto narrativo: ${tema || 'Diseño Curricular'}
+- Cantidad de clases requeridas: ${cantidad_clases}
+- Marco Normativo Provincial asignado: ${marco_provincial}`;
+
+  if (meta_proposito) {
+    userPrompt += `\n- Meta/Propósito Curricular Oficial: ${meta_proposito}`;
+  }
+
+  if (Array.isArray(aprendizajes_seleccionados) && aprendizajes_seleccionados.length > 0) {
+    userPrompt += `\n- Aprendizajes y Contenidos Seleccionados:\n  * ${aprendizajes_seleccionados.join('\n  * ')}`;
+  }
+
+  if (Array.isArray(indicadores_logro) && indicadores_logro.length > 0) {
+    userPrompt += `\n- Indicadores de Logro Asociados:\n  * ${indicadores_logro.join('\n  * ')}`;
+  }
+
+  if (enfoque_objetivo && enfoque_objetivo.trim().length > 0) {
+    userPrompt += `\n- Enfoque pedagógico u objetivo docente: ${enfoque_objetivo}`;
+  }
+
+  if (textoBase && textoBase.trim().length > 0 && textoBase !== tema) {
+    userPrompt += `\n\nMaterial bibliográfico o fuentes de referencia:\n${textoBase}`;
+  }
+
+  if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
+    userPrompt += `\n\nInstrucciones adicionales del docente:\n${instruccionesExtra}`;
+  }
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt }
+  ];
+
+  const MAX_RETRIES = 2; // Hasta 2 reintentos de corrección (máximo 3 llamadas)
+  let intento = 0;
+  let ultimoError = null;
+
+  while (intento <= MAX_RETRIES) {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        response_format: zodResponseFormat(SecuenciaDidacticaBaseSchema, 'secuencia_didactica'),
+        messages: messages
+      });
+
+      const rawContent = completion.choices[0].message.content;
+
+      let jsonParsed;
+      try {
+        jsonParsed = JSON.parse(rawContent);
+      } catch (parseError) {
+        console.error(`generarSecuenciaDidactica: JSON inválido recibido en intento ${intento + 1}:`, rawContent);
+        throw new Error('La IA devolvió una respuesta con formato inválido para la secuencia didáctica.');
+      }
+
+      // ── 1. Validación determinística de "El Juez" ──
+      const juicio = validarSecuenciaDidactica(jsonParsed);
+
+      if (juicio.esValido) {
+        // Normalización / sanitización de tiempos y clases para asegurar consistencia
+        if (Array.isArray(jsonParsed.clases)) {
+          jsonParsed.cantidad_clases = jsonParsed.clases.length;
+          jsonParsed.clases.forEach((clase) => {
+            const tInicio = Number(clase.momentos?.inicio?.tiempo_minutos) || 0;
+            const tDesarrollo = Number(clase.momentos?.desarrollo?.tiempo_minutos) || 0;
+            const tCierre = Number(clase.momentos?.cierre?.tiempo_minutos) || 0;
+            const suma = tInicio + tDesarrollo + tCierre;
+            if (suma > 0) {
+              clase.duracion_minutos = suma;
+            }
+          });
+        }
+
+        const validation = SecuenciaDidacticaSchema.safeParse(jsonParsed);
+        if (validation.success) {
+          if (intento > 0) {
+            console.log(`generarSecuenciaDidactica: Secuencia corregida y validada exitosamente en el intento ${intento + 1}.`);
+          }
+          return validation.data;
+        }
+      }
+
+      // Si no pasa la validación del Juez
+      ultimoError = juicio.errores;
+      console.warn(`generarSecuenciaDidactica: Intento ${intento + 1}/${MAX_RETRIES + 1} rechazado por el Juez:`, juicio.errores);
+
+      if (intento < MAX_RETRIES) {
+        // Inyectamos la respuesta defectuosa y la orden de corrección precisa
+        messages.push({ role: 'assistant', content: rawContent });
+        messages.push({
+          role: 'user',
+          content: `Tu respuesta anterior fue rechazada por los siguientes errores:\n${juicio.errores.map(e => `- ${e}`).join('\n')}\n\nCorrige estos problemas, expande las clases y devuelve el JSON válido.`
+        });
+      }
+    } catch (apiError) {
+      console.error(`generarSecuenciaDidactica: Error en intento ${intento + 1}:`, apiError.message || apiError);
+      ultimoError = [apiError.message || 'Error en la llamada a la API'];
+    }
+
+    intento++;
+  }
+
+  // Si se agotaron los 2 reintentos
+  console.error('generarSecuenciaDidactica: Se agotaron los reintentos de auto-corrección. Errores finales:', ultimoError);
+  throw new Error(`La IA no pudo generar una secuencia didáctica válida tras ${MAX_RETRIES + 1} intentos. Motivos: ${ultimoError ? ultimoError.join('; ') : 'Error de validación desconocido'}`);
+}
+
 module.exports = {
   generarResumenMultifuente,
   generarClase,
@@ -525,5 +725,6 @@ module.exports = {
   sugerirDatosTema,
   generarImagenDalle,
   editarRecursoConIA,
-  generarPlanificacionAnual
+  generarPlanificacionAnual,
+  generarSecuenciaDidactica
 };

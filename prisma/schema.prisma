@@ -40,6 +40,8 @@ model Usuario {
 model Materia {
   id           String              @id @default(uuid())
   nombre       String
+  nivel        String?
+  grado        String?
   usuario      Usuario             @relation(fields: [usuarioId], references: [id])
   usuarioId    String
   carpetas     Carpeta[]
@@ -127,6 +129,8 @@ enum TipoRecurso {
   MAPA_CONCEPTUAL
   CLASE
   PRESENTACION
+  SECUENCIA_DIDACTICA
+  SECUENCIA
 }
 
 enum TipoContenidoTema {

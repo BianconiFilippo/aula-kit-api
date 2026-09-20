@@ -5,20 +5,19 @@ const authRoutes = require('./authRoutes');
 const materiaRoutes = require('./materiaRoutes');
 const authenticate = require('../middlewares/auth.middleware');
 const imagenController = require('../controllers/imagen.controller');
+const exportarController = require('../controllers/exportar.controller');
 const libroTemasNuevoRoutes = require('./libroTemasNuevoRoutes');
 const iaRoutes = require('./iaRoutes');
 const calendarioRoutes = require('./calendarioRoutes');
 
 router.use('/auth', authRoutes);
+router.use('/ia', iaRoutes);
 router.use('/materias', authenticate, materiaRoutes);
 router.use('/calendario', authenticate, calendarioRoutes);
+router.use('/imagenes/buscar', authenticate, imagenController.buscarImagen);
+router.use('/exportar/resumen-pdf', authenticate, exportarController.exportarPdf);
+router.use('/exportar/pdf', authenticate, exportarController.exportarPdf);
 router.use('/', libroTemasNuevoRoutes);
-const exportarController = require('../controllers/exportar.controller');
-
-router.use('/ia', iaRoutes);
-router.get('/imagenes/buscar', authenticate, imagenController.buscarImagen);
-router.post('/exportar/resumen-pdf', authenticate, exportarController.exportarPdf);
-router.post('/exportar/pdf', authenticate, exportarController.exportarPdf);
 
 
 

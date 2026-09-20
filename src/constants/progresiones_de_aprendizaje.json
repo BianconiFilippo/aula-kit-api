@@ -1,0 +1,577 @@
+[
+    {
+        "nivel": "Educación Inicial",
+        "ciclo_grado": "Sala de 3",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Usar la serie numérica oral hasta el 50 y escrita hasta el 30, en situaciones de cuantificación y medición de longitudes, capacidades y tiempo transcurrido.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Enunciación de la serie numérica oral hasta aproximadamente el 10, en situaciones cotidianas y juegos.",
+                "indicadores_de_logro": [
+                    "Reconoce oralmente palabras que expresan números (palabras-números).",
+                    "Expresa oralmente números desde el 1 hasta aproximadamente el 10 siguiendo el orden convencional y sin saltearse ninguno."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Exploración de la representación simbólica (con cifras) de números desde el 1 y hasta aproximadamente el 10, en situaciones cotidianas y juegos.",
+                "indicadores_de_logro": [
+                    "Diferencia números escritos y letras presentados en distintos soportes.",
+                    "Identifica y lee números escritos (código) hasta aproximadamente el 10, recurriendo al conteo oral sobre la banda numérica cuando sea necesario."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Cuantificación de colecciones de hasta aproximadamente 6 objetos, en situaciones cotidianas y juegos.",
+                "indicadores_de_logro": [
+                    "Cuenta oralmente colecciones de hasta 6 objetos desplazables.",
+                    "Construye colecciones de aproximadamente 6 objetos desplazables, recurriendo a la correspondencia término a término y al conteo oral.",
+                    "Explica el procedimiento empleado para construir colecciones de hasta 6 objetos desplazables."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Comparación perceptiva de longitudes, en situaciones cotidianas y juegos.",
+                "indicadores_de_logro": [
+                    "Determina visualmente longitudes más largas, más cortas, iguales en colecciones de objetos desplazables ubicadas de manera vertical u horizontal.",
+                    "Organiza de manera vertical u horizontal objetos desplazables al comparar longitudes (más largo, más corto, más alto, más bajo, iguales)."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Inicial",
+        "ciclo_grado": "Sala de 4",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Usar la serie numérica oral hasta el 50 y escrita hasta el 30, en situaciones de cuantificación y medición de longitudes, capacidades y tiempo transcurrido.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Enunciación de la serie numérica oral hasta aproximadamente el 30, en situaciones cotidianas y juegos.",
+                "indicadores_de_logro": [
+                    "Expresa oralmente los números desde el 1 y hasta aproximadamente el 30, siguiendo el orden convencional y sin saltearse ninguno.",
+                    "Expresa oralmente los números a partir de un número distinto de 1 y en forma ascendente hasta aproximadamente el 30.",
+                    "Expresa oralmente los números en forma descendente desde aproximadamente el 5."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Reconocimiento de la serie numérica escrita desde 1 hasta aproximadamente el 20, en situaciones cotidianas y juegos.",
+                "indicadores_de_logro": [
+                    "Identifica y lee números escritos simbólicamente (con cifras) hasta aproximadamente el 20, recurriendo al conteo oral sobre la banda numérica, en caso de ser necesario.",
+                    "Ordena los números escritos desde el 1 y hasta el 10, recurriendo al conteo oral sobre la banda numérica, en caso de ser necesario.",
+                    "Utiliza números escritos simbólicamente (con cifras) en situaciones en las que se requiere identificar objetos y designar posiciones hasta aproximadamente el 3."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Cuantificación de colecciones de hasta aproximadamente 12 objetos desplazables, en situaciones cotidianas y juegos.",
+                "indicadores_de_logro": [
+                    "Construye una colección de hasta 12 objetos desplazables, a partir de una cantidad expresada oralmente.",
+                    "Explica sus propios procedimientos y los de otras/os, empleados para recordar cantidades de hasta aproximadamente 12 objetos desplazables o representados gráficamente.",
+                    "Explica sus propios procedimientos y los de otras/os, empleados para determinar la cantidad de elementos de una colección, luego de reunir o agregar hasta 6 elementos.",
+                    "Utiliza dibujos y/o marcas para expresar cantidades de hasta aproximadamente 12 objetos."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Medición de longitudes y tiempo transcurrido con unidades de medidas no convencionales, en situaciones cotidianas y juegos.",
+                "indicadores_de_logro": [
+                    "Reconoce la necesidad de usar una misma unidad de medida no convencional (mismo pie, misma soga, entre otras) para determinar longitudes.",
+                    "Determina longitudes mediante el uso de objetos desplazables (contorno de un pie, tiras, sogas, entre otros), solicitando la colaboración de sus pares y docentes, en caso de ser necesario.",
+                    "Expresa oralmente la cantidad de veces que la unidad de medida no convencional (contorno de un pie, tiras, sogas, entre otras) entra en la longitud medida.",
+                    "Identifica el comienzo y la terminación de dos acciones para comparar sus duraciones."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "1.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Reconocer el uso de la suma y de la resta para resolver distintas situaciones extramatemáticas que le dan sentido a estas operaciones y utilizar diferentes procedimientos para su cálculo, incluidos los algoritmos convencionales.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Uso de diferentes procedimientos, incluido el cálculo de sumas de números naturales de una o dos cifras, en situaciones donde hay que juntar, agregar, avanzar.",
+                "indicadores_de_logro": [
+                    "Identifica la información relevante de la situación escuchada y/o leída (contexto, datos e incógnita).",
+                    "Elabora, explica y compara diferentes procedimientos propios y de otras/os (conteo o sobreconteo y cálculo), para determinar el total que resulta al juntar elementos de dos colecciones (juntar-unir), agregar elementos a una colección que ya se tiene y establecer la posición a la que se llega, al avanzar posiciones en una serie.",
+                    "Identifica y escribe simbólicamente, con los signos + e =, la suma que representa la acción realizada (juntar, agregar, avanzar).",
+                    "Construye variados procedimientos de cálculo basados en la descomposición aditiva de uno o dos de los sumandos, para la suma de números de dos cifras."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de diferentes procedimientos, incluido el cálculo de restas de números naturales de una o dos cifras, en situaciones donde hay que separar, quitar, retroceder.",
+                "indicadores_de_logro": [
+                    "Identifica la información relevante de la situación escuchada y/o leída (contexto, datos e incógnita).",
+                    "Elabora, explica y compara diferentes procedimientos propios y de otras/os (conteo, descuento y cálculo), para determinar el total que resulta al separar elementos de dos colecciones, al quitar elementos a una colección que ya se tiene y al establecer la posición a la que se llega al retroceder posiciones en una serie.",
+                    "Identifica y escribe simbólicamente, con los signos - e =, la resta que representa la acción realizada (separar, quitar, retroceder).",
+                    "Construye variados procedimientos de cálculo basados en la descomposición aditiva del minuendo y/o sustraendo, para la resta de números de dos cifras."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de un repertorio de cálculos y resultados de suma y resta de números de una y dos cifras, construido colectivamente.",
+                "indicadores_de_logro": [
+                    "Construye un conjunto de cálculos de suma, como sumas de un número más 1, sumas de \"dieces\" más \"unos\" (10 + 8, 20 + 5;...), sumas de un número más 10, sumas de sumandos iguales de una cifra (1 + 1, hasta 9 + 9), sumas que dan 10.",
+                    "Construye un conjunto de cálculos de resta: restas de un número menos 1; restas de un número de dos cifras menos 10.",
+                    "Explica cómo emplea el repertorio de cálculos construido colectivamente, en la resolución de otras sumas y restas."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "2.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Reconocer el uso de la suma y de la resta para resolver distintas situaciones extramatemáticas que le dan sentido a estas operaciones y utilizar diferentes procedimientos para su cálculo, incluidos los algoritmos convencionales.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Uso de diferentes procedimientos, incluido el cálculo de sumas de números naturales de una, dos y tres cifras, en situaciones donde hay que juntar, agregar, avanzar, averiguar cuánto había al principio.",
+                "indicadores_de_logro": [
+                    "Identifica la información relevante de la situación escuchada y/o leída (contexto, datos e incógnita).",
+                    "Elabora, explica y compara diferentes procedimientos propios y de otras/os (conteo, sobreconteo y cálculo), para determinar cuánto había al principio, antes de quitar elementos de una colección.",
+                    "Identifica y escribe simbólicamente la suma que representa la acción realizada (juntar, agregar, avanzar, averiguar cuánto había al principio).",
+                    "Escucha y/o lee una situación y reconoce a la suma como la operación más adecuada para resolverla.",
+                    "Compara los procedimientos, basados en la descomposición aditiva de sumandos, con el algoritmo convencional de la suma.",
+                    "Emplea el algoritmo convencional de la suma cuando los números lo requieren."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de diferentes procedimientos, incluido el cálculo de restas de números naturales de una, dos y tres cifras, en situaciones donde hay que separar, quitar, retroceder, averiguar cuánto había al principio y comparar.",
+                "indicadores_de_logro": [
+                    "Identifica la información relevante de la situación escuchada y/o leída (contexto, datos e incógnita).",
+                    "Elabora, explica y compara diferentes procedimientos propios y de otras/os (conteo, descuento y cálculo), para determinar cuánto había al principio, antes de quitar elementos de una colección, y cuánto más o cuánto menos tiene una colección comparada con otra.",
+                    "Identifica y escribe simbólicamente la resta que representa la acción realizada (separar, quitar, averiguar cuánto había al principio, comparar).",
+                    "Escucha y/o lee una situación y reconoce a la resta como la operación más adecuada para resolverla.",
+                    "Compara los procedimientos, basados en la descomposición aditiva del minuendo y/o del sustraendo, con el algoritmo convencional de la resta.",
+                    "Emplea el algoritmo convencional de la resta cuando los números lo requieren."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de un repertorio de cálculos y resultados de suma y resta de números de una, dos y tres cifras, construido colectivamente.",
+                "indicadores_de_logro": [
+                    "Construye un conjunto de cálculos de suma, como sumas de números de una cifra distintos (4 + 3; 2 + 5; ... 8 + 7; 9 + 8, entre otros), sumas de \"dieces\" que dan 100 (20 + 80), sumas de un número más 100, sumas de \"dieces\" iguales (10 + 10, hasta 90 + 90), sumas de \"cienes\" más \"dieces\" más \"unos\" (200 + 10 + 8; 600 + 20 + 5, entre otras).",
+                    "Construye un conjunto de cálculos de resta, como restas de un número de tres cifras menos 10 y menos 100.",
+                    "Emplea el repertorio de cálculos de suma en la resolución de las restas asociadas (por ejemplo, como 8 + 2 = 10, entonces 10 - 2 = 8 y 10 - 8 = 2).",
+                    "Explica cómo emplea él/ella y cómo lo hacen sus pares, el repertorio de cálculos construido colectivamente, en la resolución de otras sumas y restas."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "1.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Comunicar y ordenar números naturales hasta el 1000 en situaciones de cuantificación, medición (longitudes, capacidades y tiempo transcurrido), interpretación de datos y juegos.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Interpretación de la información que brindan los números naturales según el contexto de uso.",
+                "indicadores_de_logro": [
+                    "Reconoce que los números se usan para expresar cantidades, posiciones, precios, medidas, y como códigos.",
+                    "Determina la cantidad de elementos de una colección -mediante conteo y sobreconteo- y la expresa con palabras-número y símbolos.",
+                    "Expresa con palabras-número y símbolos la cantidad de elementos de una colección que ha determinado mediante conteo y sobreconteo.",
+                    "Emplea los números para expresar posiciones en situaciones de juego y medición.",
+                    "Utiliza los números en tablas para indicar la cantidad de veces que se repite cada opción seleccionada en encuestas con pictografías."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Medición de longitudes y capacidades con unidades no convencionales y expresión (oral y simbólica) del número de veces que la unidad de medida está contenida en la magnitud a medir, para realizar comparaciones indirectas.",
+                "indicadores_de_logro": [
+                    "Selecciona y emplea la unidad de medida no convencional, en función de la magnitud a medir, solicitando la colaboración de sus pares y docentes, en caso de ser necesario.",
+                    "Registra con un número la cantidad de veces que la unidad de medida entra en la longitud o capacidad del objeto que se mide.",
+                    "Compara los registros producidos por él/ella misma/o y o por otras/os, para establecer qué longitud o capacidad es mayor, menor o igual que otra."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Determinación del tiempo transcurrido, en forma indirecta recurriendo a unidades de uso frecuente (días, semanas y meses).",
+                "indicadores_de_logro": [
+                    "Reconoce la distribución de días en la semana y de meses en el año.",
+                    "Emplea el calendario para establecer el tiempo transcurrido entre dos eventos.",
+                    "Expresa numéricamente el tiempo transcurrido entre dos eventos, en términos de días, semanas y/o meses."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de las regularidades de la serie numérica oral y escrita hasta el 100.",
+                "indicadores_de_logro": [
+                    "Identifica las regularidades de la serie numérica oral (palabras-número) hasta aproximadamente el 100.",
+                    "Identifica las cifras que cambian y las que no cambian en cuadros de números hasta aproximadamente el 100.",
+                    "Lee y escribe números hasta aproximadamente el 100 que refieren a cantidades y medidas.",
+                    "Compara y ordena números hasta aproximadamente el 100 que refieren a cantidades y medidas.",
+                    "Descompone aditivamente números de dos cifras apoyados en palabras-número."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "2.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Comunicar y ordenar números naturales hasta el 1000 en situaciones de cuantificación, medición (longitudes, capacidades y tiempo transcurrido), interpretación de datos y juegos.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Interpretación de la información numérica presentada en textos, imágenes, tablas de doble entrada y de frecuencia.",
+                "indicadores_de_logro": [
+                    "Distingue los elementos que componen una tabla de doble entrada y de frecuencia.",
+                    "Elabora respuestas a interrogantes seleccionando la información numérica presentada en textos, imágenes y tablas.",
+                    "Relaciona la información numérica presente en textos y tablas obtenidas en juegos y encuestas con pictografías."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Estimación y medición de longitudes y capacidades con unidades no convencionales y convencionales (metro y centímetro, litro y mililitro) y comunicación del número de veces que la unidad de medida está contenida en la magnitud a medir, para realizar comparaciones indirectas.",
+                "indicadores_de_logro": [
+                    "Reconoce la necesidad del uso de unidades convencionales para comunicar el resultado de mediciones de longitudes y capacidades.",
+                    "Selecciona y emplea el instrumento (regla y cinta métrica -para las longitudes-, vaso graduado -para las capacidades-) y la unidad de medida convencional, en función de la magnitud y cantidad a medir.",
+                    "Registra las medidas obtenidas especificando número natural y unidad de medida.",
+                    "Compara las medidas registradas por él/ella misma/o con las de sus pares, a fin de determinar si es necesario o no modificarlas.",
+                    "Ordena las medidas obtenidas en función del criterio establecido: mayor que o menor que."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Determinación del tiempo transcurrido, en forma indirecta recurriendo a unidades de uso frecuente (hora y minuto) con relojes digitales.",
+                "indicadores_de_logro": [
+                    "Identifica las horas y los minutos en el reloj digital.",
+                    "Emplea la información que brinda el reloj digital para calcular el tiempo transcurrido entre dos eventos."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de las regularidades de la serie numérica oral y escrita hasta el 1000.",
+                "indicadores_de_logro": [
+                    "Identifica las regularidades de la serie numérica oral (palabras-número) hasta aproximadamente el 1000.",
+                    "Identifica las cifras que cambian y las que no cambian en cuadros de números (de 1 en 1 y de 10 en 10) hasta aproximadamente el 1000.",
+                    "Reconoce las regularidades de la serie numérica escrita en rectas numéricas hasta el 1000.",
+                    "Lee y escribe números hasta aproximadamente el 1000 que refieren a cantidades y medidas.",
+                    "Compara y ordena números hasta aproximadamente el 1000 que refieren a cantidades y medidas.",
+                    "Encuadra números hasta aproximadamente el 1000.",
+                    "Descompone aditivamente números de tres cifras apoyados en palabras-número.",
+                    "Reconoce el valor de las cifras (en términos de \"cienes\", \"dieces\" y \"unos\"), según la posición que ocupan en el número."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "1.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Usar las características de las figuras y los cuerpos geométricos en situaciones de comunicación, reproducción y construcción.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Reconocimiento de características de figuras geométricas planas en situaciones de comparación, comunicación y reproducción.",
+                "indicadores_de_logro": [
+                    "Identifica semejanzas y diferencias entre figuras planas: presencia de bordes curvos o rectos, y, si son rectos, cantidad de lados y vértices y lados iguales.",
+                    "Emplea el lenguaje convencional referido a elementos y características de figuras planas al interpretar y elaborar mensajes orales.",
+                    "Reproduce, en hojas punteadas, modelos de cuadrados, rectángulos y triángulos considerando características de sus lados, con empleo de la regla para el trazado de líneas rectas."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Reconocimiento de características de cuerpos geométricos (cubos, prismas, pirámides y cilindros) en situaciones de comparación y comunicación.",
+                "indicadores_de_logro": [
+                    "Identifica semejanzas y diferencias entre cuerpos geométricos, como formas de las caras y cantidad de caras y vértices.",
+                    "Emplea el lenguaje convencional referido a elementos (caras, vértices) y características de cuerpos geométricos al interpretar y elaborar mensajes orales.",
+                    "Relaciona cuadrados, rectángulos, triángulos y círculos con las caras de cubos, prismas, pirámides y cilindros."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "2.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Usar las características de las figuras y los cuerpos geométricos en situaciones de comunicación, reproducción y construcción.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Uso de las características de las figuras planas en situaciones de comunicación y construcción de figuras, y reproducción de configuraciones geométricas.",
+                "indicadores_de_logro": [
+                    "Interpreta mensajes orales y escritos que refieren a características de las figuras geométricas planas: borde curvo o recto, y, si es recto, cantidad de lados y vértices y lados iguales.",
+                    "Reproduce, en hojas cuadriculadas, modelos de configuraciones geométricas que incluyen cuadrados, rectángulos y triángulos con empleo de la regla para el trazado de líneas rectas y la medición.",
+                    "Compara su reproducción de configuraciones geométricas con el modelo dado, a fin de determinar si es necesario o no modificar su reproducción.",
+                    "Construye figuras geométricas de tres lados y más, a partir del plegado o la unión de cuadrados, rectángulos y triángulos."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de las características de los cuerpos geométricos (cubos, prismas, pirámides y cilindros) en situaciones de comunicación y construcción.",
+                "indicadores_de_logro": [
+                    "Interpreta mensajes orales y escritos que refieren a características de los cuerpos geométricos (cantidad de caras, vértices y/o aristas y forma de las caras).",
+                    "Relaciona figuras planas de tres lados y más con las caras de prismas y pirámides.",
+                    "Construye esqueletos de cuerpos geométricos, considerando cantidad de vértices y aristas, medida de aristas."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "3.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Usar la suma y la resta y seleccionar los procedimientos de cálculo en función de los números naturales y expresiones fraccionarias empleados, en situaciones extramatemáticas que dan sentido a estas operaciones.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Uso de la suma y la resta -con números de una, dos, tres y cuatro cifras- en situaciones de uno o varios pasos, que demanden juntar-separar, agregar-quitar, avanzar-retroceder y comparar.",
+                "indicadores_de_logro": [
+                    "Elabora, explica y compara diferentes procedimientos de cálculo, propios y de otras/os, para averiguar cuánto se agregó o quitó a una colección que cambió en el tiempo.",
+                    "Reconoce la operación (suma o resta) que representa la acción realizada.",
+                    "Lee una situación y diferencia la información relevante de la irrelevante para resolverla.",
+                    "Reconoce, a partir de la lectura de la situación, la operación (suma o resta) más adecuada para resolverla.",
+                    "Considera opciones de gasto con el dinero disponible y determina el dinero sobrante, en situaciones de juntar-separar, agregar-quitar.",
+                    "Emplea el repertorio de cálculos ya conocidos y los algoritmos, para determinar el resultado exacto de las sumas y restas que representan la acción realizada."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de un repertorio de cálculos de suma y resta con números de tres y cuatro cifras, a partir de los ya conocidos.",
+                "indicadores_de_logro": [
+                    "Compara cálculos de números \"redondos\" de tres y cuatro cifras con los ya conocidos para establecer semejanzas y diferencias.",
+                    "Determina resultados de números \"redondos\" de tres y cuatro cifras, a partir de los cálculos ya conocidos (sin uso del algoritmo).",
+                    "Explica cómo emplea ella/el y cómo lo hacen sus pares, el repertorio de cálculos ya conocidos en situaciones extramatemáticas, incluidas las de aumento o disminución de precios."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "4.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Usar la suma y la resta y seleccionar los procedimientos de cálculo en función de los números naturales y expresiones fraccionarias empleados, en situaciones extramatemáticas que dan sentido a estas operaciones.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Uso de la suma y la resta con números naturales de cualquier cantidad de cifras, en situaciones que demanden el desarrollo de dos o más pasos.",
+                "indicadores_de_logro": [
+                    "Lee una situación y diferencia la información relevante de la irrelevante para resolverla.",
+                    "Selecciona y justifica la operación (suma o resta) para representar la acción que permite resolver la situación leída.",
+                    "Explica cómo emplea el repertorio de cálculos ya conocidos y los algoritmos, para determinar el resultado exacto de las sumas y restas que representan las acciones realizadas."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Análisis de la conveniencia de uso del repertorio de cálculos conocidos y de los algoritmos, para determinar el resultado exacto y aproximado de sumas y restas de números naturales de cualquier cantidad de cifras.",
+                "indicadores_de_logro": [
+                    "Comunica las propiedades asociativa y conmutativa que fundamentan los procedimientos no algorítmicos para la suma de números naturales.",
+                    "Compara sumas y restas con el repertorio de cálculos ya conocidos a fin de seleccionar la forma de resolución del cálculo.",
+                    "Emplea y explica las estrategias de redondeo de números, para determinar resultados aproximados de sumas y restas."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de diferentes procedimientos para el cálculo de sumas y restas con expresiones fraccionarias de uso social (medios, cuartos y octavos), en situaciones que demanden juntar-separar, agregar-quitar y comparar.",
+                "indicadores_de_logro": [
+                    "Lee una situación y diferencia la información relevante de la irrelevante para resolverla.",
+                    "Reconoce, a partir de la lectura de la situación, la operación (suma o resta) más adecuada para resolverla.",
+                    "Elabora, explica y compara distintos procedimientos propios y de otras/os, para el cálculo de sumas y restas entre expresiones fraccionarias, a partir de las relaciones entre medios, cuartos y octavos.",
+                    "Elabora, explica y compara distintos procedimientos para el cálculo de sumas y restas, entre expresiones fraccionarias y números naturales."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "3.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Reconocer el uso de la multiplicación y la división en situaciones de proporcionalidad y organizaciones rectangulares, y utilizar diferentes procedimientos para su cálculo.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Uso de diferentes procedimientos, incluido el cálculo de multiplicaciones por una cifra, en situaciones de proporcionalidad y de organizaciones rectangulares.",
+                "indicadores_de_logro": [
+                    "Identifica la información relevante de la situación leída (contexto, datos e incógnita).",
+                    "Elabora, explica y compara diferentes procedimientos propios y de otras/os (conteo, sobreconteo, conteo en saltos de 2 en 2, de 5 en 5, de 10 en 10, entre otros -, sumas repetidas, cálculo de multiplicaciones), para determinar cantidades proporcionales expresadas en tablas y textos en las cuales se presenta el valor que corresponde a la unidad.",
+                    "Elabora, explica y compara diferentes procedimientos propios y de otras/os (conteo, sobreconteo, conteo en saltos de 2 en 2, de 5 en 5, de 10 en 10, entre otros -, sumas repetidas, cálculo de multiplicaciones), para determinar la cantidad total de elementos dispuestos en organizaciones rectangulares.",
+                    "Identifica y escribe simbólicamente, con los signos x e =, la multiplicación correspondiente a la suma reiterada.",
+                    "Construye y explica variados procedimientos para el cálculo multiplicativo por números de una cifra y los compara con el algoritmo convencional.",
+                    "Emplea el algoritmo convencional de la multiplicación cuando los números lo requieren, justificando su elección."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de un repertorio de cálculos multiplicativos de números de una cifra y por la unidad seguida de ceros, construidos colectivamente.",
+                "indicadores_de_logro": [
+                    "Compara y establece relaciones entre resultados de multiplicaciones en tablas de proporcionalidad al completar la tabla pitagórica.",
+                    "Analiza las relaciones entre productos expresados en la tabla pitagórica.",
+                    "Construye progresivamente un repertorio de cálculos multiplicativos -con apoyo de la tabla pitagórica- incluidos los productos por 10, por 100 y por 1000.",
+                    "Explica el uso del repertorio de cálculos multiplicativos, en la construcción de procedimientos de cálculo para esta operación."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de diferentes procedimientos en situaciones de proporcionalidad, que involucren las acciones de partir y repartir equitativamente.",
+                "indicadores_de_logro": [
+                    "Identifica la información relevante de la situación leída (contexto, datos e incógnita).",
+                    "Elabora, explica y compara diferentes procedimientos propios y de otras/os (conteo, sobreconteo, restas repetidas, tabla pitagórica), para averiguar el cociente en situaciones de repartos y particiones equitativas.",
+                    "Identifica y escribe simbólicamente, con los signos ÷ e =, la división correspondiente a la acción realizada (repartir y partir equitativamente).",
+                    "Determina si sobran o no elementos luego de realizar un reparto o una partición."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "4.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Reconocer el uso de la multiplicación y la división en situaciones de proporcionalidad y organizaciones rectangulares, y utilizar diferentes procedimientos para su cálculo.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Uso de la multiplicación por una y dos cifras, en situaciones de proporcionalidad y de organizaciones rectangulares.",
+                "indicadores_de_logro": [
+                    "Lee una situación y diferencia la información relevante de la irrelevante para resolverla.",
+                    "Reconoce, a partir de la lectura de la situación, cuándo la multiplicación es la operación más adecuada para resolverla.",
+                    "Compara, explica y emplea diferentes procedimientos de cálculo, propios y de otros/as, para determinar cantidades proporcionales -expresadas en tablas y textos- en los cuales no se presenta el valor que corresponde a la unidad.",
+                    "Compara, explica y emplea diferentes procedimientos de cálculo, propios y de otros/as para determinar la cantidad total de elementos dispuestos en organizaciones rectangulares.",
+                    "Explica el uso del repertorio de cálculos ya conocidos -expresados en la tabla pitagórica y también por 10, por 100 y por 1000- en multiplicaciones con números \"redondos\" de dos y tres cifras.",
+                    "Compara los procedimientos basados en el uso implícito de las propiedades de la multiplicación (asociativa y distributiva con respecto a la suma) con el algoritmo convencional por dos cifras.",
+                    "Emplea el algoritmo convencional de la multiplicación por una y dos cifras, cuando los números lo requieren, justificando su elección.",
+                    "Selecciona los productos a comprar considerando la relación entre la cantidad del producto y el precio, en situaciones de proporcionalidad."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de la división para determinar el cociente y el resto en situaciones de proporcionalidad (acciones de repartir y partir) y de organizaciones rectangulares.",
+                "indicadores_de_logro": [
+                    "Lee una situación y diferencia la información relevante de la irrelevante para resolverla.",
+                    "Reconoce, a partir de la lectura de la situación, cuándo la división es la operación más adecuada para resolverla.",
+                    "Compara, explica y emplea diferentes procedimientos de cálculo -incluido el repertorio multiplicativo conocido- para averiguar el cociente en situaciones de repartos y particiones equitativas en contexto de proporcionalidad.",
+                    "Compara, explica y usa diferentes procedimientos de cálculo -incluido el repertorio multiplicativo conocido- para averiguar el cociente en situaciones de repartos y particiones equitativas, en contexto de organizaciones rectangulares.",
+                    "Analiza si lo que sobra luego de un reparto o una partición se puede o no seguir dividiendo, o cambia la respuesta porque al cociente hay que sumar uno.",
+                    "Compara, explica y emplea diferentes procedimientos para el cálculo de divisiones por números de una cifra, considerando el dividendo en su totalidad y aproximándose mediante diferentes productos parciales entre el cociente y el divisor."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "3.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Comunicar y ordenar números naturales de cualquier cantidad de cifras y expresiones fraccionarias de uso social, en situaciones de cuantificación, medición (longitudes, capacidades, pesos y tiempo transcurrido), estadística y en juegos.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Interpretación de la información estadística presentada en tablas de frecuencia, pictogramas y diagramas de barras.",
+                "indicadores_de_logro": [
+                    "Distingue los elementos que componen los diagramas de barras.",
+                    "Compara cantidades incluidas en tablas de frecuencia, pictogramas y diagramas de barras.",
+                    "Plantea preguntas a partir de la información incluida en tablas de frecuencia, pictogramas y diagramas de barras."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Estimación y medición de longitudes, capacidades y pesos con unidades convencionales (metro y centímetro, litro y mililitro, kilogramo y gramo) para realizar comparaciones empleando equivalencias entre las principales unidades de medida.",
+                "indicadores_de_logro": [
+                    "Selecciona y emplea el instrumento y la unidad de medida convencional en función de la magnitud y de la cantidad a medir.",
+                    "Registra y compara, con sus pares, las medidas obtenidas especificando número natural y unidad de medida, a fin de determinar si es necesario o no modificarlas.",
+                    "Anticipa longitudes, capacidades y pesos de diferentes objetos, y compara la estimación con la medida real.",
+                    "Emplea las equivalencias entre las principales unidades de medida de longitud (1 m = 100 cm), capacidad (1 L = 1000 mL) y peso (1 kg = 1000 g)."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Medición y cálculo de duraciones de tiempo empleando unidades convencionales de uso frecuente (hora, minuto y segundo).",
+                "indicadores_de_logro": [
+                    "Reconoce y emplea las equivalencias entre unidades de tiempo (1 hora = 60 minutos, 1 minuto = 60 segundos).",
+                    "Mide efectivamente las duraciones de tiempo usando el reloj digital, el analógico y el cronómetro.",
+                    "Determina mediante el cálculo las duraciones de tiempo a partir de dos horarios dados."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Uso de las regularidades de la serie numérica oral y escrita hasta el 10.000.",
+                "indicadores_de_logro": [
+                    "Identifica las regularidades de la serie numérica oral (palabras-número) y escrita, en rectas numéricas hasta el 10.000.",
+                    "Identifica las cifras que cambian y las que no cambian en cuadros de números (de 100 en 100) hasta aproximadamente el 10.000.",
+                    "Lee y escribe números hasta aproximadamente el 10.000 que refieren a cantidades, precios y medidas.",
+                    "Compara números de hasta cinco cifras, que refieren a cantidades, precios y medidas, empleando los símbolos < o > para comunicar la relación menor que y mayor que, respectivamente.",
+                    "Distingue cuándo un producto es excesivamente caro a partir de la comparación de los números -de hasta 5 cifras- que refieren a precios del mismo producto.",
+                    "Ordena y encuadra números en rectas numéricas hasta el 10.000.",
+                    "Descompone aditiva y multiplicativamente números hasta aproximadamente 10.000 (en términos de \"miles\", \"cienes\", \"dieces\" y \"unos\"), estableciendo relaciones con la posición de las cifras en el número."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "4.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Comunicar y ordenar números naturales de cualquier cantidad de cifras y expresiones fraccionarias de uso social, en situaciones de cuantificación, medición (longitudes, capacidades, pesos y tiempo transcurrido), estadística y en juegos.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Establecimiento de relaciones entre información estadística presentada en tablas de frecuencia y gráficos de barras y circulares sencillos (sin uso de porcentaje).",
+                "indicadores_de_logro": [
+                    "Distingue los elementos que componen los gráficos circulares.",
+                    "Explica la relación que establece entre cada sector del gráfico circular y la correspondiente expresión fraccionaria de uso social (medios, cuartos y octavos).",
+                    "Plantea preguntas a partir de la información estadística incluida en tablas de frecuencia, diagramas de barras y gráficos circulares.",
+                    "Elabora textos con la información estadística presentada en tablas de frecuencia, diagramas de barras y gráficos circulares."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Estimación y medición de longitudes, capacidades y pesos con unidades convencionales (metro, litro y kilogramo), y comunicación de estas mediante el uso de expresiones fraccionarias de uso social.",
+                "indicadores_de_logro": [
+                    "Selecciona la unidad de medida convencional para realizar estimaciones y mediciones.",
+                    "Registra las medidas obtenidas empleando expresiones fraccionarias de uso social, como 1/2 m, 1/4 m, 1/2 L, 1/4 L, 1/8 L, 3/4 L, 1/2 kg, 1/4 kg, 3/4 kg, 1/8 kg.",
+                    "Compara los registros de sus estimaciones y mediciones con los de sus pares, a fin de determinar si es necesario o no modificarlos."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Comparación y cálculo de longitudes, capacidades y pesos, con empleo de las equivalencias entre las principales unidades de medida.",
+                "indicadores_de_logro": [
+                    "Emplea y explica las equivalencias entre las principales unidades de medida de longitud (1 km = 1.000 m, 1 m = 100 cm), capacidad (1 L = 1.000 mL) y peso (1 kg = 1.000 g), para realizar comparaciones.",
+                    "Determina mediante el cálculo longitudes, capacidades y pesos a partir de medidas dadas u obtenidas a partir de la medición."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Interpretación y uso de las características de nuestro sistema de numeración (posicional y decimal).",
+                "indicadores_de_logro": [
+                    "Lee y escribe números de cualquier cantidad de cifras, que refieren a cantidades y medidas, a partir de la información sobre los nombres de los números redondos (10.000, 20.000, 30.000, ... 100.000, 200.000, 300.000, ... 1.000.000, ...) incluidos en rectas numéricas.",
+                    "Ordena y encuadra números de cualquier cantidad de cifras en rectas numéricas.",
+                    "Descompone aditiva y multiplicativamente números, considerando el valor posicional de las cifras.",
+                    "Establece y justifica equivalencias entre los órdenes de unidades, decenas, centenas, unidades de mil.",
+                    "Comprende las equivalencias entre los órdenes de unidades, decenas, centenas, unidades de mil y el sistema monetario argentino.",
+                    "Anticipa el resultado de cálculos que involucran dividir por 10, 100, 1.000."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Reconocimiento de expresiones fraccionarias de uso social (medios, cuartos y octavos) para expresar resultados de repartos y relaciones entre la parte y el entero.",
+                "indicadores_de_logro": [
+                    "Comunica resultados de repartos, usando expresiones fraccionarias de uso social, como 1/2, 1/4, 1/8, 3/4.",
+                    "Comunica relaciones entre las partes y el entero, usando expresiones fraccionarias de uso social, como 1/2, 1/4, 1/8, 3/4.",
+                    "Lee y escribe expresiones fraccionarias de uso social, como 1/2, 1/4, 1/8, 3/4.",
+                    "Establece relaciones (dobles y mitades) entre expresiones fraccionarias de uso social."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "3.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Diferenciar triángulos, cuadriláteros, circunferencias y círculos -a partir de sus características y propiedades-, prismas y pirámides -desde sus desarrollos planos y bases-, en situaciones de comunicación, reproducción y construcción.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Análisis de información sobre elementos y características de triángulos y cuadriláteros en situaciones de comparación, copiado y construcción.",
+                "indicadores_de_logro": [
+                    "Compara triángulos y cuadriláteros teniendo en cuenta cantidad y medida de lados, clases de ángulos, presencia de diagonales.",
+                    "Clasifica triángulos según lados y ángulos.",
+                    "Reproduce triángulos y cuadriláteros, en hojas cuadriculadas y lisas, considerando longitud de lados y amplitud de ángulos, con empleo de la regla, la escuadra y el transportador.",
+                    "Elabora instrucciones orales y escritas (con empleo del lenguaje convencional referido a elementos) para construir triángulos y cuadriláteros, en hojas cuadriculadas y lisas."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Análisis de características de prismas (incluido el cubo).",
+                "indicadores_de_logro": [
+                    "Explica la relación que establece entre la cantidad de lados de la base con la cantidad de caras laterales, vértices y aristas de prismas.",
+                    "Compara desarrollos planos para decidir la posibilidad o no de construcción de prismas."
+                ]
+            }
+        ]
+    },
+    {
+        "nivel": "Educación Primaria",
+        "ciclo_grado": "4.º grado",
+        "espacio_curricular": "Matemática",
+        "meta_proposito": "Diferenciar triángulos, cuadriláteros, circunferencias y círculos -a partir de sus características y propiedades-, prismas y pirámides -desde sus desarrollos planos y bases-, en situaciones de comunicación, reproducción y construcción.",
+        "bloques": [
+            {
+                "aprendizaje_y_contenido": "Reconocimiento de las propiedades que definen a circunferencias y círculos, en situaciones de reproducción y construcción.",
+                "indicadores_de_logro": [
+                    "Reproduce, en hojas lisas, figuras que contienen circunferencias o arcos de circunferencias, con empleo de regla, compás y/o software.",
+                    "Explica la diferencia entre circunferencia y círculo.",
+                    "Interpreta instructivos para la construcción de figuras que contienen circunferencias o arcos de circunferencias y círculos.",
+                    "Comunica información necesaria para reproducir y construir circunferencias o arcos de circunferencias y círculos."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Reconocimiento de la relación entre los lados de un triángulo y de la propiedad de la suma de los ángulos interiores de los triángulos, en situaciones de construcción.",
+                "indicadores_de_logro": [
+                    "Explora y distingue la posibilidad de construcción de triángulos a partir de información sobre medida de lados, usando la noción de circunferencia, apelando al uso del software cuando sea posible.",
+                    "Explora y distingue la posibilidad de construcción de triángulos a partir de información sobre medida de ángulos, apelando al uso del software cuando sea posible.",
+                    "Anticipa y justifica la posibilidad de construcción de triángulos dadas las medidas de tres lados o ángulos.",
+                    "Relaciona la propiedad de la suma de los ángulos interiores de un triángulo con la clasificación según sus ángulos."
+                ]
+            },
+            {
+                "aprendizaje_y_contenido": "Análisis de características de prismas y pirámides.",
+                "indicadores_de_logro": [
+                    "Explica la relación que establece entre la cantidad de lados de la base y la cantidad de caras laterales, vértices y aristas de pirámides.",
+                    "Compara desarrollos planos para decidir la posibilidad o no de construcción de prismas y pirámides.",
+                    "Justifica la posibilidad o no de construcción de prismas y pirámides con los desarrollos planos presentados."
+                ]
+            }
+        ]
+    }
+]

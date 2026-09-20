@@ -1,5 +1,11 @@
 const prisma = require('../services/db');
-const { generarResumenMultifuente, generarClase: generarClaseIA, generarPresentacion: generarPresentacionIA, editarRecursoConIA } = require('../services/aiService');
+const {
+  generarResumenMultifuente,
+  generarClase: generarClaseIA,
+  generarPresentacion: generarPresentacionIA,
+  generarSecuenciaDidactica: generarSecuenciaDidacticaIA,
+  editarRecursoConIA
+} = require('../services/aiService');
 
 async function generarResumen(req, res) {
   try {
@@ -291,7 +297,11 @@ async function generarClase(req, res) {
     console.error('Error al generar la clase:', error);
 
     // Error de validación de estructura JSON de la IA
-    if (error.message.includes('formato inválido') || error.message.includes('campos requeridos')) {
+    if (
+      error.message.includes('formato inválido') ||
+      error.message.includes('campos requeridos') ||
+      error.message.includes('esquema pedagógico')
+    ) {
       return res.status(502).json({ error: error.message });
     }
 
@@ -467,10 +477,124 @@ async function eliminarRecurso(req, res) {
   }
 }
 
+async function generarSecuencia(req, res) {
+  try {
+    const materiaId = req.params.id;
+    const {
+      material_id,
+      provincia,
+      espacio_curricular,
+      curso,
+      tema,
+      cantidad_clases,
+      enfoque_objetivo,
+      instrucciones_extra,
+      textoBase,
+      meta_proposito,
+      aprendizajes_seleccionados,
+      indicadores_logro
+    } = req.body;
+    const usuarioId = req.user?.id;
+
+    if (!usuarioId) {
+      return res.status(401).json({ error: 'Acceso denegado. Usuario no autenticado.' });
+    }
+
+    let textoBaseFinal = '';
+
+    if (material_id && material_id !== 'from-scratch') {
+      const fuente = await prisma.fuenteContenido.findFirst({
+        where: { id: material_id, materiaId: materiaId }
+      });
+
+      if (!fuente) {
+        return res.status(404).json({
+          error: 'Material base no encontrado o no pertenece a esta materia.'
+        });
+      }
+      textoBaseFinal = fuente.textoExtraido || '';
+    } else if (textoBase) {
+      textoBaseFinal = textoBase;
+    }
+
+    // 1. Obtener datos del usuario y verificar créditos
+    let dbUser = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+    if (!dbUser) {
+      dbUser = await prisma.usuario.create({
+        data: {
+          id: usuarioId,
+          email: req.user.email,
+          nombreCompleto: req.user.user_metadata?.nombreCompleto || req.user.user_metadata?.full_name || 'Usuario',
+          tier: 'free',
+          peticiones_ia_restantes: 3,
+          fecha_ultimo_reinicio: new Date()
+        }
+      });
+    }
+
+    // 2. Control de Tiers y Límite
+    if (dbUser.tier !== 'premium') {
+      if (dbUser.peticiones_ia_restantes <= 0) {
+        return res.status(403).json({
+          error: 'Límite gratuito alcanzado',
+          code: 'LIMIT_REACHED'
+        });
+      }
+    }
+
+    // 3. Truncar si es excesivamente largo
+    let textoBaseFinalTruncado = textoBaseFinal;
+    if (textoBaseFinalTruncado.length > 30000) {
+      textoBaseFinalTruncado = textoBaseFinalTruncado.substring(0, 30000);
+    }
+
+    // 4. Llamada al servicio de IA
+    const secuenciaGenerada = await generarSecuenciaDidacticaIA({
+      provincia,
+      espacio_curricular,
+      curso,
+      tema,
+      cantidad_clases: cantidad_clases ? Number(cantidad_clases) : 3,
+      enfoque_objetivo,
+      textoBase: textoBaseFinalTruncado,
+      instruccionesExtra: instrucciones_extra || '',
+      meta_proposito,
+      aprendizajes_seleccionados,
+      indicadores_logro
+    });
+
+    // 5. Descontar crédito
+    if (dbUser.tier !== 'premium') {
+      await prisma.usuario.update({
+        where: { id: usuarioId },
+        data: { peticiones_ia_restantes: { decrement: 1 } }
+      });
+    }
+
+    return res.status(200).json({
+      mensaje: 'Secuencia didáctica generada con éxito',
+      datos: secuenciaGenerada
+    });
+  } catch (error) {
+    console.error('Error al generar la secuencia didáctica:', error);
+    if (
+      error.message.includes('formato inválido') ||
+      error.message.includes('campos requeridos') ||
+      error.message.includes('esquema pedagógico')
+    ) {
+      return res.status(502).json({ error: error.message });
+    }
+    return res.status(500).json({
+      error: 'Hubo un problema al generar la secuencia didáctica con Inteligencia Artificial.'
+    });
+  }
+}
+
 module.exports = {
   generarResumen,
   generarClase,
   generarPresentacion,
+  generarSecuencia,
   guardarRecurso,
   obtenerRecursosPorMateria,
   obtenerRecursoPorId,

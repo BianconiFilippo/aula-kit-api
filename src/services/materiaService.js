@@ -6,6 +6,8 @@ class MateriaService {
     const nuevaMateria = await prisma.materia.create({
       data: {
         nombre: data.nombre,
+        nivel: data.nivel,
+        grado: data.grado,
         usuarioId: data.usuarioId
       }
     });
