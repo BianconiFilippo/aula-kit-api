@@ -44,7 +44,7 @@ async function extraerTextoDeArchivo(fileBuffer, mimeType = '', originalName = '
 /**
  * Mapea la planificación anual sobre un esqueleto existente de clases (UUIDs pasados a la IA)
  */
-async function completarEsqueletoConIA(materiaId, textoExtraido, esqueleto) {
+async function completarEsqueletoConIA(_materiaId, textoExtraido, esqueleto) {
   const esqueletoFormatted = esqueleto.map(c => ({
     id: c.id,
     fecha: c.fecha ? new Date(c.fecha).toISOString().split('T')[0] : null,

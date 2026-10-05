@@ -377,7 +377,7 @@ async function generarImagenDalle(prompt) {
 
       const fileName = `${randomUUID()}.png`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('material_images')
         .upload(fileName, buffer, { contentType: 'image/png', upsert: true });
 

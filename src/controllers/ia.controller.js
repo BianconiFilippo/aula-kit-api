@@ -166,7 +166,7 @@ const sugerirIndicadorLogro = async (req, res) => {
   }
 };
 
-const obtenerProgresionesCordoba = async (req, res) => {
+const obtenerProgresionesCordoba = async (_req, res) => {
   try {
     const progresiones = require('../constants/progresiones_de_aprendizaje.json');
     return res.status(200).json({ success: true, data: progresiones });

@@ -16,59 +16,6 @@ const ColorUnidadEnum = ['teal', 'blue', 'amber', 'coral', 'purple', 'pink', 'gr
 const CapacidadMCCEnum = ['oralidad', 'pensamiento_critico', 'resolucion_problemas', 'trabajo_colaborativo', 'tecnologias', 'ed_ambiental'];
 const TipoContenidoTemaEnum = ['conceptual', 'procedimental', 'actitudinal', 'mixto'];
 const EvaluacionTemaEnum = ['observacion', 'tp', 'escrita', 'oral', 'sin_evaluacion'];
-const ModalidadClaseEnum = ['individual', 'grupal', 'plenario', 'mixta'];
-const EstadoClaseNuevoEnum = ['planificada', 'dada', 'cancelada', 'postergada'];
-
-// --- Helper function to calculate bottom-up dates ---
-const calcularFechasJerarquia = (unidades) => {
-  return unidades.map(unidad => {
-    const temasActualizados = (unidad.temas || []).map(tema => {
-      const clasesConFecha = (tema.clases || [])
-        .filter(c => c.fechaEstimada)
-        .map(c => new Date(c.fechaEstimada));
-
-      let fechaInicio = null;
-      let fechaFin = null;
-
-      if (clasesConFecha.length > 0) {
-        fechaInicio = new Date(Math.min(...clasesConFecha));
-        fechaFin = new Date(Math.max(...clasesConFecha));
-      }
-
-      return {
-        ...tema,
-        fechaInicio,
-        fechaFin,
-        fecha_inicio: fechaInicio,
-        fecha_fin: fechaFin
-      };
-    });
-
-    const fechasTemas = temasActualizados
-      .reduce((acc, t) => {
-        if (t.fechaInicio) acc.push(t.fechaInicio);
-        if (t.fechaFin) acc.push(t.fechaFin);
-        return acc;
-      }, []);
-
-    let fechaInicioUni = null;
-    let fechaFinUni = null;
-
-    if (fechasTemas.length > 0) {
-      fechaInicioUni = new Date(Math.min(...fechasTemas));
-      fechaFinUni = new Date(Math.max(...fechasTemas));
-    }
-
-    return {
-      ...unidad,
-      temas: temasActualizados,
-      fechaInicio: fechaInicioUni,
-      fechaFin: fechaFinUni,
-      fecha_inicio: fechaInicioUni,
-      fecha_fin: fechaFinUni
-    };
-  });
-};
 
 const obtenerArbolLibroTemas = async (req, res) => {
   try {
@@ -705,7 +652,7 @@ const eliminarLibroTema = async (req, res) => {
 // POST /api/libros-temas/:id/duplicar
 const duplicarLibroTema = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id: _id } = req.params;
     return res.status(200).json({ success: true, message: 'Libro duplicado correctamente.' });
   } catch (error) {
     console.error('Error al duplicar libro de temas:', error);

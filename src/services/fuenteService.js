@@ -8,7 +8,7 @@ class FuenteService {
     const nombreUnico = `${Date.now()}-${Math.round(Math.random() * 1E9)}.${extension}`;
     const filePath = `${materiaId}/${nombreUnico}`;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('material')
       .upload(filePath, file.buffer, {
         contentType: file.mimetype,

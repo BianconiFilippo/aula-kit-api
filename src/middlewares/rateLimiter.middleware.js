@@ -10,7 +10,7 @@ const aiGenerationLimiter = rateLimit({
     return req.user?.id || req.ip;
   },
   validate: { keyGeneratorIpFallback: false }, // Disable keyGenerator validations to prevent startup validation crashes
-  handler: (req, res, next, options) => {
+  handler: (_req, res) => {
     return res.status(429).json({
       error: 'Demasiadas solicitudes. Por favor, espera 10 segundos antes de generar otro recurso.',
       code: 'TOO_MANY_REQUESTS'
