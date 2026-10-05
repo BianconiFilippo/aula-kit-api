@@ -1,0 +1,114 @@
+{
+  "id": "93067788-5cea-4f35-83c5-c539c33a03a5",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.bloques": {
+      "name": "bloques",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "progresion_id": {
+          "name": "progresion_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "aprendizaje_y_contenido": {
+          "name": "aprendizaje_y_contenido",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "indicadores_de_logro": {
+          "name": "indicadores_de_logro",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bloques_progresion_id_progresiones_id_fk": {
+          "name": "bloques_progresion_id_progresiones_id_fk",
+          "tableFrom": "bloques",
+          "tableTo": "progresiones",
+          "columnsFrom": [
+            "progresion_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.progresiones": {
+      "name": "progresiones",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nivel": {
+          "name": "nivel",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ciclo_grado": {
+          "name": "ciclo_grado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "espacio_curricular": {
+          "name": "espacio_curricular",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "meta_proposito": {
+          "name": "meta_proposito",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
