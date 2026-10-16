@@ -59,6 +59,14 @@ class MateriaService {
 
     return true;
   }
+
+  async updateIcono(id, iconoUrl) {
+    const materiaActualizada = await prisma.materia.update({
+      where: { id },
+      data: { iconoUrl }
+    });
+    return new MateriaModel(materiaActualizada);
+  }
 }
 
 module.exports = new MateriaService();

@@ -338,6 +338,7 @@ const actualizarClaseParcial = async (req, res) => {
       caracteristica_clase, caracteristicaClase,
       tema_dia, temaDia,
       actividades_propuestas, actividadesPropuestas,
+      observaciones,
       estado
     } = req.body;
 
@@ -369,6 +370,10 @@ const actualizarClaseParcial = async (req, res) => {
     const resActividades = actividadesPropuestas !== undefined ? actividadesPropuestas : actividades_propuestas;
     if (resActividades !== undefined) {
       data.actividadesPropuestas = resActividades;
+    }
+
+    if (observaciones !== undefined) {
+      data.observaciones = observaciones;
     }
 
     if (estado !== undefined) {
@@ -409,6 +414,7 @@ const crearClase = async (req, res) => {
       caracteristica_clase, caracteristicaClase,
       tema_dia, temaDia,
       actividades_propuestas, actividadesPropuestas,
+      observaciones,
       estado
     } = req.body;
 
@@ -434,6 +440,7 @@ const crearClase = async (req, res) => {
         caracteristicaClase: caracteristicaClase !== undefined ? caracteristicaClase : (caracteristica_clase || null),
         temaDia: temaDia !== undefined ? temaDia : (tema_dia || null),
         actividadesPropuestas: actividadesPropuestas !== undefined ? actividadesPropuestas : (actividades_propuestas || null),
+        observaciones: observaciones !== undefined ? observaciones : null,
         estado: resEstado
       }
     });

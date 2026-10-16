@@ -42,6 +42,7 @@ model Materia {
   nombre       String
   nivel        String?
   grado        String?
+  iconoUrl     String?
   usuario      Usuario             @relation(fields: [usuarioId], references: [id])
   usuarioId    String
   carpetas     Carpeta[]
@@ -196,6 +197,7 @@ model Clase {
   caracteristicaClase  String?     @map("caracteristica_clase")
   temaDia              String?     @map("tema_dia") @db.Text
   actividadesPropuestas String?    @map("actividades_propuestas") @db.Text
+  observaciones        String?     @db.Text
   estado               EstadoClase @default(Planificada)
 
   materia              Materia     @relation(fields: [materiaId], references: [id], onDelete: Cascade)

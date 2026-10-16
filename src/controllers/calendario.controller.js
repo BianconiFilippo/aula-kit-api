@@ -38,6 +38,8 @@ const obtenerEventosCalendario = async (req, res) => {
       caracteristicaClase: c.caracteristicaClase,
       temaDia: c.temaDia,
       actividadesPropuestas: c.actividadesPropuestas,
+      observaciones: c.observaciones,
+      novedades: c.observaciones || c.temaDia,
       estado: c.estado,
       tipo: 'clase'
     }));

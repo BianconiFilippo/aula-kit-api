@@ -1,6 +1,7 @@
 const materiaService = require('../services/materiaService');
 const { CreateMateriaDto } = require('../dtos/materia.dto');
 const fuenteService = require('../services/fuenteService');
+const supabaseStorageService = require('../services/supabase.service');
 const prisma = require('../services/db');
 
 const crearMateria = async (req, res) => {
@@ -23,7 +24,8 @@ const obtenerMaterias = async (req, res) => {
     const materias = await materiaService.getAll(req.user.id);
     return res.status(200).json(materias);
   } catch (error) {
-    return res.status(500).json({ error: 'Error al obtener materias' });
+    console.error('Error al obtener materias:', error);
+    return res.status(500).json({ error: 'Error al obtener materias', detalle: error.message });
   }
 };
 
@@ -129,4 +131,44 @@ const actualizarFuente = async (req, res) => {
   }
 };
 
-module.exports = { crearMateria, obtenerMaterias, obtenerMateria, subirFuente, eliminarMateria, eliminarFuente, getFuentesMateria, actualizarFuente };
+const actualizarIcono = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'No se subió ningún archivo de imagen para el icono.' });
+    }
+
+    // Subir icono a Supabase Storage (bucket 'materia-icons')
+    const iconoUrl = await supabaseStorageService.subirIconoMateria(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      'materia-icons'
+    );
+
+    // Actualizar materia en base de datos
+    const materiaActualizada = await materiaService.updateIcono(id, iconoUrl);
+
+    return res.status(200).json(materiaActualizada);
+  } catch (error) {
+    console.error('Error al actualizar icono de la materia:', error);
+    return res.status(500).json({
+      error: 'Error al actualizar el icono de la materia',
+      detalle: error.message
+    });
+  }
+};
+
+module.exports = {
+  crearMateria,
+  obtenerMaterias,
+  obtenerMateria,
+  subirFuente,
+  eliminarMateria,
+  eliminarFuente,
+  getFuentesMateria,
+  actualizarFuente,
+  actualizarIcono
+};

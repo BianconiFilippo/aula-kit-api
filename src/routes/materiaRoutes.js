@@ -7,7 +7,7 @@ const carpetaController = require('../controllers/carpeta.controller');
 const multer = require('multer');
 const libroTemasNuevoController = require('../controllers/libro-temas.controller');
 const recursoController = require('../controllers/recurso.controller');
-const { aiGenerationLimiter } = require('../middlewares/rateLimiter.middleware');
+const { aiLimiter, aiGenerationLimiter } = require('../middlewares/rateLimiter.middleware');
 
 // Proteger todas las rutas de materias
 router.use(authMiddleware);
@@ -33,16 +33,19 @@ router.delete('/:id/fuentes/:fuenteId', authMiddleware, materiaController.elimin
 router.patch('/:id/fuentes/:fuenteId', authMiddleware, materiaController.actualizarFuente);
 router.get('/:id/fuentes', materiaController.getFuentesMateria);
 
+// Ruta para actualizar icono personalizado de la materia
+router.post('/:id/icono', upload.single('archivo'), materiaController.actualizarIcono);
+
 // Rutas de carpetas
 router.post('/:id/carpetas', authMiddleware, carpetaController.crearCarpeta);
 router.patch('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.renombrarCarpeta);
 router.delete('/:id/carpetas/:carpetaId', authMiddleware, carpetaController.eliminarCarpeta);
 
-// Rutas AI 
-router.post('/:id/generar-resumen', aiGenerationLimiter, recursoController.generarResumen);
-router.post('/:id/generar-clase',   aiGenerationLimiter, recursoController.generarClase);
-router.post('/:id/generar-presentacion', aiGenerationLimiter, recursoController.generarPresentacion);
-router.post('/:id/generar-secuencia', aiGenerationLimiter, recursoController.generarSecuencia);
+// Rutas AI (Protegidas con rate limiting direccional y ráfaga)
+router.post('/:id/generar-resumen', aiLimiter, aiGenerationLimiter, recursoController.generarResumen);
+router.post('/:id/generar-clase',   aiLimiter, aiGenerationLimiter, recursoController.generarClase);
+router.post('/:id/generar-presentacion', aiLimiter, aiGenerationLimiter, recursoController.generarPresentacion);
+router.post('/:id/generar-secuencia', aiLimiter, aiGenerationLimiter, recursoController.generarSecuencia);
 
 // Rutas Libro Temas
 router.get('/:id/libros', libroTemasNuevoController.obtenerLibrosPorMateria);

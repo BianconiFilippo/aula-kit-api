@@ -8,7 +8,11 @@ const { PrismaClient } = require('@prisma/client');
 // Además, Prisma 7 ahora REQUIERE el uso de Adapters para Node por defecto.
 // La URL ya tiene "&pg_prepared_statements=false" definido gracias al archivo `prisma.config.ts`,
 // pero lo aseguramos también en la inicialización nativa de pg.
-const connectionString = process.env.DATABASE_URL + "&pg_prepared_statements=false";
+const rawUrl = process.env.DATABASE_URL || process.env.DIRECT_URL;
+const connectionString = rawUrl && !rawUrl.includes('pg_prepared_statements')
+  ? `${rawUrl}${rawUrl.includes('?') ? '&' : '?'}pg_prepared_statements=false`
+  : rawUrl;
+
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 

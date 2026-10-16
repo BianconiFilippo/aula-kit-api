@@ -12,7 +12,7 @@ const calendarioRoutes = require('./calendarioRoutes');
 
 router.use('/auth', authRoutes);
 router.use('/ia', iaRoutes);
-router.use('/materias', authenticate, materiaRoutes);
+router.use('/materias', materiaRoutes);
 router.use('/calendario', authenticate, calendarioRoutes);
 router.use('/imagenes/buscar', authenticate, imagenController.buscarImagen);
 router.use('/exportar/resumen-pdf', authenticate, exportarController.exportarPdf);
