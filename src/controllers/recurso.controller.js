@@ -314,7 +314,13 @@ async function generarClase(req, res) {
 async function generarPresentacion(req, res) {
   try {
     const materiaId = req.params.id;
-    const { material_id, instrucciones_extra, textoBase } = req.body;
+    const {
+      material_id,
+      instrucciones_extra,
+      textoBase,
+      cantidad_diapositivas,
+      tipo_presentacion
+    } = req.body;
     const usuarioId = req.user?.id;
 
     if (!usuarioId) {
@@ -409,7 +415,14 @@ async function generarPresentacion(req, res) {
     }
 
     // 6. Llamada a la IA
-    const presentacionGenerada = await generarPresentacionIA(textoBaseFinalTruncado, instrucciones_extra || '');
+    const presentacionGenerada = await generarPresentacionIA(
+      textoBaseFinalTruncado,
+      instrucciones_extra || '',
+      {
+        cantidadDiapositivas: cantidad_diapositivas,
+        tipoPresentacion: tipo_presentacion
+      }
+    );
 
     // 7. Descontar crédito solo tras respuesta exitosa
     if (dbUser.tier !== 'premium') {

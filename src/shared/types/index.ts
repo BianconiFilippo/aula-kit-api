@@ -174,19 +174,49 @@ export const ClaseGeneradaSchema = z.object({
 });
 
 // Presentación / Diapositivas
+export const CompareColumnSchema = z.object({
+  titulo: z.string().optional(),
+  items: z.array(z.string()).optional(),
+  descripcion: z.string().optional()
+});
+
+export const StepItemSchema = z.object({
+  paso: z.union([z.number(), z.string()]).optional(),
+  titulo: z.string(),
+  descripcion: z.string().optional()
+});
+
 export const SlideContentSchema = z.object({
   kicker: z.string().optional(),
   title: z.string().optional(),
   body: z.string().optional(),
   items: z.array(z.string()).optional(),
   imagePrompt: z.string().optional(),
-  imageUrl: z.string().optional()
+  imageUrl: z.string().optional(),
+  url: z.string().optional(),
+  lado_a: CompareColumnSchema.optional(),
+  lado_b: CompareColumnSchema.optional(),
+  pasos: z.array(StepItemSchema).optional()
 });
 
 export const SlideSchema = z.object({
-  layoutType: z.enum(['hero', 'split_image_text', 'grid_3', 'quote', 'statement', 'debate', 'lectura', 'actividad', 'resumen']),
+  layoutType: z.enum([
+    'hero',
+    'split_image_text',
+    'grid_3',
+    'compare_2',
+    'timeline_steps',
+    'quote',
+    'statement',
+    'debate',
+    'lectura',
+    'actividad',
+    'resumen'
+  ]),
   theme: z.enum(['dark', 'light', 'primary']).default('light'),
-  content: SlideContentSchema
+  content: SlideContentSchema,
+  notas_docente: z.string().optional(),
+  speakerNotes: z.string().optional()
 });
 
 export const PresentacionSchema = z.object({

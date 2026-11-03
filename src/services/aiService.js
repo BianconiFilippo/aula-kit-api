@@ -160,54 +160,107 @@ REGLA DE TIEMPOS OBLIGATORIA:
 // Nueva función: Generación de Presentación estructurada basada en Layouts (Gamma model)
 // ─────────────────────────────────────────────────────────────────────────────
 /**
- * Genera una "Presentación" estructurada basada en tarjetas ("Layouts") a partir de un texto base.
+ * Genera una "Presentación" educativa estructurada basada en tarjetas ("Layouts") a partir de un texto base.
  * @param {string} textoBase          - Texto extraído del material fuente.
  * @param {string} instruccionesExtra - Instrucciones opcionales del docente.
- * @returns {Promise<Object>} Objeto JSON con la estructura de la presentación basada en Layouts.
+ * @param {Object} [opciones]         - Opciones pedagógicas (cantidadDiapositivas, tipoPresentacion).
+ * @returns {Promise<Object>} Objeto JSON con la estructura de la presentación educativa basada en Layouts.
  */
-async function generarPresentacion(textoBase, instruccionesExtra = '') {
-  const systemPrompt = `Actúa como un Diseñador Instruccional Senior y Prompt Engineer experto en OpenAI. Tu tarea es analizar el texto proporcionado y estructurar una presentación educativa basada en tarjetas semánticas ("Layouts"), similar al modelo de Gamma App.
+async function generarPresentacion(textoBase, instruccionesExtra = '', opciones = {}) {
+  const cantidadSlides = Number(opciones.cantidadDiapositivas) || 7;
+  const tipoClase = opciones.tipoPresentacion || 'desarrollo_tematico';
 
-REGLAS DE CONTENIDO Y DISEÑO INSTRUCCIONAL:
-1. CONTENIDO EXTENSO Y RICO: No generes resúmenes escuetos ni diapositivas vacías. El texto de cada diapositiva debe ser académicamente profundo, fluido, explicativo y pedagógicamente valioso.
-2. PROHIBIDAS LAS VIÑETAS ABURRIDAS: Está estrictamente prohibido usar listas genéricas o punteadas aburridas como recurso por defecto. Organiza la información utilizando los diferentes layouts semánticos según el propósito del contenido.
-3. ELECCIÓN OBLIGATORIA DE LAYOUTS (\`layoutType\`): Debes elegir obligatoriamente el layoutType que mejor represente el tipo de información:
-   - 'hero': Usado para portadas, introducciones de alto impacto o aperturas de temas principales. Debe incluir 'title' y 'body' profundo, opcionalmente 'kicker' e 'imagePrompt'.
-   - 'split_image_text': Usado para conceptos visuales o comparativos que combinan explicaciones detalladas con una ilustración. Requiere 'title', 'body' descriptivo extenso e 'imagePrompt' en inglés optimizado para DALL-E.
-   - 'grid_3': Usado para enumerar o comparar exactamente 3 características, pilares, pasos o ejemplos clave. Debe incluir 'title', 'body' introductorio y 'items' (array de exactamente 3 strings sustanciales).
-   - 'quote': Usado para conclusiones pedagógicas, citas de autores, reflexiones o testimonios clave. Debe incluir 'body' (la cita o reflexión profunda) y opcionalmente 'kicker' o 'title' (autor, fuente o contexto).
-   - 'statement': Usado para mensajes fuerza, definiciones centrales, estadísticas o ideas clave de alto impacto visual. Requiere 'title' o 'body' conciso y resonante.
+  let contextoTipo = '';
+  if (tipoClase === 'introductoria') {
+    contextoTipo = 'Enfoque de la clase: INTRODUCTORIA. Diseñada para despertar curiosidad, activar conocimientos previos y sentar bases conceptuales clave.';
+  } else if (tipoClase === 'profundizacion') {
+    contextoTipo = 'Enfoque de la clase: PROFUNDIZACIÓN. Diseñada para profundizar en matices, análisis crítico, causas-efectos y comparativas sustanciales.';
+  } else if (tipoClase === 'taller_practico') {
+    contextoTipo = 'Enfoque de la clase: TALLER / PRÁCTICA. Diseñada con ejemplos concretos, secuencias paso a paso y desafíos interactivos de aplicación.';
+  } else if (tipoClase === 'repaso_sintesis') {
+    contextoTipo = 'Enfoque de la clase: REPASO Y SÍNTESIS. Diseñada para articular ideas principales, cuadros de contraste y conclusiones formativas.';
+  }
 
-4. PALETA DE TEMAS (\`theme\`):
-   - 'dark': Estilo oscuro, sofisticado y elegante.
-   - 'light': Estilo claro, limpio y accesible.
-   - 'primary': Estilo con color de acento vibrante e institucional.
-   Alterna los temas entre diapositivas para darle un ritmo visual dinámico a la presentación.
+  const systemPrompt = `Actúa como un Diseñador Instruccional Senior y Pedagogo experto en Tecnología Educativa.
+Tu tarea es analizar el material provisto y estructurar una PRESENTACIÓN EDUCATIVA PROFESIONAL DE ${cantidadSlides} DIAPOSITIVAS basada en tarjetas semánticas ("Layouts"), orientada a una clase escolar/académica de excelencia.
 
-5. PROMPTS DE IMAGEN (\`imagePrompt\`):
-   - Cuando el layout requiera o se beneficie de una imagen ('split_image_text' o 'hero'), el campo 'imagePrompt' debe contener un prompt descriptivo en INGLÉS optimizado para DALL-E 3 (ej. "A high quality, hyper-realistic 3D render of a plant cell with labeled organelles, clean studio background, cinematic lighting").
+${contextoTipo}
+
+REGLAS DE DISEÑO DIDÁCTICO Y NARRATIVA PEDAGÓGICA:
+1. SECUENCIA DIDÁCTICA ESTRICTA:
+   La presentación debe seguir un hilo conductor pedagógico lógico a lo largo de las ${cantidadSlides} diapositivas:
+   - Diapositiva 1 (Portada / Apertura - 'hero'): Título atractivo de la clase, materia/área, y subtítulo o pregunta convocante.
+   - Diapositiva 2 (Gancho / Activación - 'statement' o 'quote' o 'split_image_text'): Pregunta desafiante o afirmación disparadora que conecte con la experiencia de los estudiantes.
+   - Diapositivas Intermedias (Desarrollo Conceptual y Andamiaje): Distribuir los conceptos centrales de menor a mayor complejidad empleando layouts visuales adecuados:
+     * 'split_image_text': Para conceptos que se benefician de una ilustración/diagrama (requiere 'imagePrompt' en inglés).
+     * 'grid_3': Para enumerar exactamente 3 pilares, causas, ejemplos o dimensiones fundamentales.
+     * 'compare_2': Para contrastar dos visiones, modelos opuestos, antes/después o mito vs. realidad (usando 'lado_a' y 'lado_b').
+     * 'timeline_steps': Para secuencias temporales, fases metodológicas o procesos paso a paso (usando 'pasos').
+     * 'statement': Para una definición esencial irrefutable o teorema que los estudiantes deban asimilar.
+   - Penúltima Diapositiva (Dinámica / Aplicación en Aula - 'quote' o 'grid_3' o 'split_image_text'): Pregunta o consigna breve para debatir en parejas o plenario.
+   - Última Diapositiva (Síntesis / Conclusión - 'hero' o 'statement'): Cierre con las ideas fuerza que los estudiantes deben llevarse en su carpeta.
+
+2. NOTAS PARA EL DOCENTE ('notas_docente') OBLIGATORIAS:
+   Cada diapositiva DEBE incluir obligatoriamente el campo 'notas_docente' (texto de 2 a 4 oraciones de alto valor pedagógico):
+   - Explicación oral sugerida para quien está al frente de la clase.
+   - 1 o 2 preguntas reflexivas para interpelar a los estudiantes.
+   - Advertencia de errores conceptuales comunes que conviene anticipar.
+
+3. ELECCIÓN DE LAYOUTS DISPONIBLES ('layoutType'):
+   - 'hero': Portada de alto impacto o cierre potente. Requiere 'title', 'body' y opcionalmente 'kicker'.
+   - 'split_image_text': Explicación profunda acompañada de imagen ilustrativa. Requiere 'title', 'body' e 'imagePrompt' en inglés optimizado para DALL-E.
+   - 'grid_3': Cuadrícula con exactamente 3 tarjetas. Requiere 'title', 'body' de contexto y 'items' (array de 3 strings sustanciales).
+   - 'compare_2': Cuadro comparativo en dos columnas. Requiere 'title', 'body' y los objetos 'lado_a' ({ "titulo": "...", "items": ["..."], "descripcion": "..." }) y 'lado_b' ({ "titulo": "...", "items": ["..."], "descripcion": "..." }).
+   - 'timeline_steps': Secuencia de 3 a 4 pasos o etapas. Requiere 'title', 'body' y el array 'pasos' ([{ "paso": 1, "titulo": "...", "descripcion": "..." }]).
+   - 'quote': Cita de autor, reflexión profunda o pregunta filosófica. Requiere 'body' (la frase) y 'kicker' (autor o contexto).
+   - 'statement': Mensaje fuerza o definición de gran impacto visual. Requiere 'title' o 'body'.
+
+4. PALETA DE TEMAS VISUALES ('theme'):
+   - 'light': Fondo claro, legible y accesible (ideal para diapositivas con mucho texto conceptual).
+   - 'dark': Fondo oscuro, sofisticado y moderno (ideal para portada, citas o momentos reflexivos).
+   - 'primary': Fondo vibrante institucional con color de acento.
+   Alterna temas con ritmo pedagógico (ej: portada y cierre en 'dark' o 'primary', desarrollo en 'light').
+
+5. PROHIBIDO EL TEXT-DUMP EN PANTALLA:
+   El texto proyectado para los alumnos debe ser claro, estructurado y sintético. La explicación exhaustiva debe estar en 'notas_docente'.
 
 Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura exacta:
 {
   "titulo_presentacion": "string — título global de la presentación",
   "diapositivas": [
     {
-      "layoutType": "hero" | "split_image_text" | "grid_3" | "quote" | "statement",
+      "layoutType": "hero" | "split_image_text" | "grid_3" | "compare_2" | "timeline_steps" | "quote" | "statement",
       "theme": "dark" | "light" | "primary",
+      "notas_docente": "string — Guía oral, preguntas para la clase y advertencias para el profesor al proyectar esta diapositiva",
       "content": {
         "kicker": "string (opcional antetítulo)",
         "title": "string (opcional título)",
-        "body": "string (opcional párrafo descriptivo)",
-        "items": ["string", "string", "string"] (opcional, array de strings para cuadrículas),
-        "imagePrompt": "string (opcional prompt en inglés para DALL-E)"
+        "body": "string (opcional desarrollo conceptual)",
+        "items": ["string", "string", "string"] (opcional, para listas o grid_3),
+        "imagePrompt": "string (opcional prompt en inglés descriptivo)",
+        "lado_a": {
+          "titulo": "string",
+          "items": ["string", "string"],
+          "descripcion": "string (opcional)"
+        },
+        "lado_b": {
+          "titulo": "string",
+          "items": ["string", "string"],
+          "descripcion": "string (opcional)"
+        },
+        "pasos": [
+          { "paso": 1, "titulo": "string", "descripcion": "string" },
+          { "paso": 2, "titulo": "string", "descripcion": "string" },
+          { "paso": 3, "titulo": "string", "descripcion": "string" }
+        ]
       }
     }
   ]
 }`;
 
-  let userMessage = `Analiza el siguiente texto y genera la presentación estructurada basada en Layouts:\n\n${textoBase}`;
+  let userMessage = `Analiza el siguiente material curricular y genera exactamente ${cantidadSlides} diapositivas estructuradas:\n\n${textoBase}`;
   if (instruccionesExtra && instruccionesExtra.trim().length > 0) {
-    userMessage += `\n\nInstrucciones adicionales del docente: ${instruccionesExtra}`;
+    userMessage += `\n\nInstrucciones pedagógicas adicionales del docente: ${instruccionesExtra}`;
   }
 
   const completion = await openai.chat.completions.create({
@@ -234,21 +287,46 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
   if (!validation.success) {
     console.error('generarPresentacion: Error de validación Zod:', JSON.stringify(validation.error.format(), null, 2));
 
-    // Sanitización/Fallback si la IA estructuró ligeramente distinto
+    // Sanitización y normalización robusta si la IA estructuró ligeramente distinto
     if (jsonParsed && Array.isArray(jsonParsed.diapositivas)) {
-      const validLayouts = ['hero', 'split_image_text', 'grid_3', 'quote', 'statement'];
+      const validLayouts = [
+        'hero',
+        'split_image_text',
+        'grid_3',
+        'compare_2',
+        'timeline_steps',
+        'quote',
+        'statement',
+        'debate',
+        'lectura',
+        'actividad',
+        'resumen'
+      ];
       const validThemes = ['dark', 'light', 'primary'];
 
-      jsonParsed.diapositivas = jsonParsed.diapositivas.map(slide => {
+      jsonParsed.diapositivas = jsonParsed.diapositivas.map((slide, idx) => {
+        const layoutType = validLayouts.includes(slide.layoutType)
+          ? slide.layoutType
+          : (idx === 0 ? 'hero' : 'split_image_text');
+        const theme = validThemes.includes(slide.theme) ? slide.theme : 'light';
+        const notasDocente = slide.notas_docente || slide.speakerNotes || slide.notas_orador || '';
+
         return {
-          layoutType: validLayouts.includes(slide.layoutType) ? slide.layoutType : 'hero',
-          theme: validThemes.includes(slide.theme) ? slide.theme : 'light',
+          layoutType,
+          theme,
+          notas_docente: notasDocente,
+          speakerNotes: notasDocente,
           content: {
             kicker: slide.content?.kicker || undefined,
             title: slide.content?.title || slide.titulo || undefined,
-            body: slide.content?.body || slide.body || undefined,
-            items: Array.isArray(slide.content?.items) ? slide.content.items : undefined,
-            imagePrompt: slide.content?.imagePrompt || undefined
+            body: slide.content?.body || slide.body || slide.cuerpo || undefined,
+            items: Array.isArray(slide.content?.items) ? slide.content.items : (Array.isArray(slide.items) ? slide.items : undefined),
+            imagePrompt: slide.content?.imagePrompt || slide.imagePrompt || undefined,
+            imageUrl: slide.content?.imageUrl || slide.content?.url || slide.imageUrl || undefined,
+            url: slide.content?.url || slide.url || undefined,
+            lado_a: slide.content?.lado_a || slide.lado_a || undefined,
+            lado_b: slide.content?.lado_b || slide.lado_b || undefined,
+            pasos: Array.isArray(slide.content?.pasos) ? slide.content.pasos : (Array.isArray(slide.pasos) ? slide.pasos : undefined)
           }
         };
       });
@@ -259,10 +337,21 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura ex
       }
     }
 
-    throw new Error('La respuesta de la IA no cumple con la estructura JSON y esquema de Layouts requerido.');
+    throw new Error('La respuesta de la IA no cumple con la estructura JSON y esquema de Layouts pedagógicos requerido.');
   }
 
-  return validation.data;
+  // Asegurar consistencia entre notas_docente y speakerNotes
+  const datosValidados = validation.data;
+  datosValidados.diapositivas = datosValidados.diapositivas.map(d => {
+    const notas = d.notas_docente || d.speakerNotes || '';
+    return {
+      ...d,
+      notas_docente: notas,
+      speakerNotes: notas
+    };
+  });
+
+  return datosValidados;
 }
 
 
@@ -460,19 +549,23 @@ Estructura en caso de usar secciones:
 }
 Asegúrate de que la suma de tiempo_minutos de inicio, desarrollo y cierre sea estrictamente igual a duracion_minutos.`;
     } else if (tipo === 'PRESENTACION') {
-      formatInstructions = `El objeto JSON debe respetar la estructura de una Presentación basada en Layouts:
+      formatInstructions = `El objeto JSON debe respetar la estructura de una Presentación basada en Layouts pedagógicos:
 {
   "titulo_presentacion": "string",
   "diapositivas": [
     {
-      "layoutType": "hero" | "split_image_text" | "grid_3" | "quote" | "statement",
+      "layoutType": "hero" | "split_image_text" | "grid_3" | "compare_2" | "timeline_steps" | "quote" | "statement",
       "theme": "dark" | "light" | "primary",
+      "notas_docente": "string (orientaciones pedagógicas para el profesor frente al aula)",
       "content": {
         "kicker": "string (opcional)",
         "title": "string (opcional)",
         "body": "string (opcional)",
         "items": ["string"] (opcional),
-        "imagePrompt": "string (opcional prompt DALL-E en inglés)"
+        "imagePrompt": "string (opcional prompt DALL-E en inglés)",
+        "lado_a": { "titulo": "string", "items": ["string"], "descripcion": "string (opcional)" },
+        "lado_b": { "titulo": "string", "items": ["string"], "descripcion": "string (opcional)" },
+        "pasos": [{ "paso": 1, "titulo": "string", "descripcion": "string" }]
       }
     }
   ]
