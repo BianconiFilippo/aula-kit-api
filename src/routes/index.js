@@ -19,6 +19,8 @@ router.use('/calendario', authenticate, calendarioRoutes);
 router.use('/imagenes/buscar', authenticate, imagenController.buscarImagen);
 router.use('/exportar/resumen-pdf', authenticate, exportarController.exportarPdf);
 router.use('/exportar/pdf', authenticate, exportarController.exportarPdf);
+router.post('/exportar/presentacion-pptx', authenticate, exportarController.exportarPresentacionPptx);
+router.post('/exportar/presentacion-pdf', authenticate, exportarController.exportarPresentacionPdf);
 router.use('/', libroTemasNuevoRoutes);
 
 
