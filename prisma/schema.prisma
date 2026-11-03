@@ -51,6 +51,7 @@ model Materia {
   libroTemas   RegistroLibroTema[]
   recordatorios Recordatorio[]
   clases       Clase[]
+  evaluaciones EvaluacionBase[]
 }
 
 model Carpeta {
@@ -226,5 +227,43 @@ model Recordatorio {
   @@index([usuarioId])
   @@index([materiaId])
   @@map("recordatorios")
+}
+
+model EvaluacionBase {
+  id          String   @id @default(uuid())
+  titulo      String
+  consignas   String   // El texto del examen o preguntas
+  criterios   String   // La rúbrica de corrección
+  materiaId   String   // Relación con la materia correspondiente
+  materia     Materia  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  entregas    EntregaAlumno[]
+  createdAt   DateTime @default(now())
+
+  @@index([materiaId])
+}
+
+model EntregaAlumno {
+  id             String         @id @default(uuid())
+  nombreOriginal String         // Nombre del archivo subido (ej. perez_juan.pdf)
+  archivoUrl     String         // URL pública de Supabase
+  evaluacionId   String
+  evaluacion     EvaluacionBase @relation(fields: [evaluacionId], references: [id], onDelete: Cascade)
+  comentarios    ComentarioIA[]
+  notaFinal      String?
+  createdAt      DateTime       @default(now())
+
+  @@index([evaluacionId])
+}
+
+model ComentarioIA {
+  id              String        @id @default(uuid())
+  sugerencia      String
+  criterio        String?
+  aprobado        Boolean       @default(false)
+  entregaId       String
+  entrega         EntregaAlumno @relation(fields: [entregaId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+
+  @@index([entregaId])
 }
 

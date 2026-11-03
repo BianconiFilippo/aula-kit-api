@@ -347,3 +347,47 @@ export type ClaseSpreadsheet = z.infer<typeof ClaseSpreadsheetSchema>;
 export type Recordatorio = z.infer<typeof RecordatorioSchema>;
 export type EventosCalendarioResponse = z.infer<typeof EventosCalendarioResponseSchema>;
 export type LibroTemaArbol = z.infer<typeof LibroTemaArbolSchema>;
+
+// ==========================================
+// 6. CORRECCIÓN DE EVALUACIONES CON IA (PASO 1)
+// ==========================================
+export const ComentarioIASchema = z.object({
+  id: z.string().uuid(),
+  sugerencia: z.string(),
+  criterio: z.string().nullable().optional(),
+  aprobado: z.boolean().default(false),
+  entregaId: z.string().uuid(),
+  createdAt: z.string().or(z.date()).optional()
+});
+
+export const EntregaAlumnoSchema = z.object({
+  id: z.string().uuid(),
+  nombreOriginal: z.string(),
+  archivoUrl: z.string().url(),
+  evaluacionId: z.string().uuid(),
+  notaFinal: z.string().nullable().optional(),
+  createdAt: z.string().or(z.date()).optional(),
+  comentarios: z.array(ComentarioIASchema).optional()
+});
+
+export const EvaluacionBaseSchema = z.object({
+  id: z.string().uuid(),
+  titulo: z.string().min(1, 'El título es obligatorio'),
+  consignas: z.string().min(1, 'Las consignas son obligatorias'),
+  criterios: z.string().min(1, 'Los criterios de rúbrica son obligatorios'),
+  materiaId: z.string().uuid('Debe especificar una materia válida'),
+  createdAt: z.string().or(z.date()).optional(),
+  entregas: z.array(EntregaAlumnoSchema).optional()
+});
+
+export const CreateEvaluacionPayloadSchema = z.object({
+  titulo: z.string().min(1, 'El título es obligatorio'),
+  consignas: z.string().min(1, 'Las consignas son obligatorias'),
+  criterios: z.string().min(1, 'Los criterios son obligatorios'),
+  materiaId: z.string().uuid('El ID de materia debe ser un UUID válido')
+});
+
+export type ComentarioIA = z.infer<typeof ComentarioIASchema>;
+export type EntregaAlumno = z.infer<typeof EntregaAlumnoSchema>;
+export type EvaluacionBase = z.infer<typeof EvaluacionBaseSchema>;
+export type CreateEvaluacionPayload = z.infer<typeof CreateEvaluacionPayloadSchema>;

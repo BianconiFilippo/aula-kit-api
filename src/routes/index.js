@@ -9,10 +9,12 @@ const exportarController = require('../controllers/exportar.controller');
 const libroTemasNuevoRoutes = require('./libroTemasNuevoRoutes');
 const iaRoutes = require('./iaRoutes');
 const calendarioRoutes = require('./calendarioRoutes');
+const evaluacionRoutes = require('./evaluacionRoutes');
 
 router.use('/auth', authRoutes);
 router.use('/ia', iaRoutes);
 router.use('/materias', materiaRoutes);
+router.use('/evaluaciones', evaluacionRoutes);
 router.use('/calendario', authenticate, calendarioRoutes);
 router.use('/imagenes/buscar', authenticate, imagenController.buscarImagen);
 router.use('/exportar/resumen-pdf', authenticate, exportarController.exportarPdf);
